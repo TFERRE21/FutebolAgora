@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SportsBoard from "../sports-board";
+import FeaturedMatch from "../featured-match";
 import { sports } from "../../config/sports";
 
 const sections = {
@@ -53,6 +54,7 @@ export default async function SectionPage({ params, searchParams }) {
             {isBrasileirao ? <><Link className={view === "overview" ? "active" : ""} href="/brasileirao">Série A</Link><Link className={view === "classification" ? "active" : ""} href="/brasileirao?view=classification">Classificação</Link><Link className={view === "results" ? "active" : ""} href="/brasileirao?view=results">Resultados</Link><Link className={view === "upcoming" ? "active" : ""} href="/brasileirao?view=upcoming">Próximos jogos</Link></> : page.groups.map((group) => <span key={group}>{group}</span>)}
           </div>
         </section>
+        <FeaturedMatch filter={filters[section] || {}} />
         <SportsBoard filter={filters[section] || {}} view={view} />
         <div className="section-title"><h2>Principais páginas</h2></div>
         <section className="sports-strip">
