@@ -31,11 +31,12 @@ function Match({ game, live = false }) {
   );
 }
 
-export default function SportsBoard() {
+export default function SportsBoard({ filter = {} }) {
   const [data, setData] = useState(null);
   async function load() {
     try {
-      const response = await fetch("/api/sports", { cache: "no-store" });
+      const query = new URLSearchParams(filter).toString();
+      const response = await fetch("/api/sports" + (query ? "?" + query : ""), { cache: "no-store" });
       setData(await response.json());
     } catch {}
   }
