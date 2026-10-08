@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "FutebolAgora — Notícias, jogos e resultados",
-  description: "Notícias, jogos, resultados, classificações e informações esportivas em um só lugar."
+  title: "Arena Agora — O esporte acontece aqui",
+  description: "Notícias, jogos, resultados, tabelas e estatísticas dos principais esportes em um só lugar."
 };
 
 export default function RootLayout({ children }) {
