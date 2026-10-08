@@ -10,7 +10,12 @@ function fmtTime(ms) {
 function Match({ game, live = false }) {
   const home = game.homeTeam?.name || "Mandante";
   const away = game.awayTeam?.name || "Visitante";
-  const logo = (team) => {\n    if (!team?.logo) return null;\n    return /^https?:\\/\\//i.test(team.logo) ? team.logo : "https://sportsapi.com.br" + (team.logo.startsWith("/") ? team.logo : "/" + team.logo);\n  };
+  const logo = (team) => {
+    if (!team?.logo) return null;
+    return /^https?:\/\//i.test(team.logo)
+      ? team.logo
+      : "https://sportsapi.com.br" + (team.logo.startsWith("/") ? team.logo : "/" + team.logo);
+  };
   return (
     <div className="live-match">
       <div className="match-league">{game.league?.name || game.sport}</div>
