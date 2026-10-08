@@ -13,7 +13,7 @@ export default function HomePage() {
     <header className="site-header">
       <div className="header-top"><div className="header-top-inner"><span>{brDate().toUpperCase()}</span><span>Últimas notícias · Resultados · Tabelas · Estatísticas</span></div></div>
       <div className="header-main">
-        <a className="brand" href="/"><b className="brand-mark"><span>AA</span></b><span>Arena</span>Agora</a>
+        <a className="brand" href="/"><img className="brand-logo-img" src="/arena-agora-logo.svg" alt="Arena Agora" /></a>
         <div className="search">🔎 &nbsp; Buscar notícia, time ou campeonato</div>
       </div>
       <nav className="nav"><div className="nav-inner">
