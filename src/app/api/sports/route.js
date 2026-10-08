@@ -36,23 +36,33 @@ async function getBrasileiraoMatches(competition, region, status, date, maxAgeMs
   return first;
 }
 
-async function buildBrasileiraoClassification(matches) {
-  const candidates = [...matches]
-    .filter((match) => match?.id)
-    .sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
+async function buildBrasileiraoClassification(competition, region) {
+  const first = await getFilteredMatches({
+    sport: "football",
+    competition,
+    region,
+    hasStandings: true,
+    maxAgeMs: 5 * 60 * 1000
+  });
 
-  const errors = [];
+  const errors = [...(first.errors || [])];
+  let matches = first.matches || [];
 
-  for (const match of candidates.slice(0, 3)) {
-    const details = await getMatchDetails(match.id, "football");
-    if (!details.ok) {
-      errors.push({ endpoint: "/games/:id/details", status: details.status, error: details.error });
-      continue;
-    }
+  if (!matches.length && competition === "Serie A") {
+    const fallback = await getFilteredMatches({
+      sport: "football",
+      competition: "Brasileirao",
+      region,
+      hasStandings: true,
+      maxAgeMs: 5 * 60 * 1000
+    });
+    matches = fallback.matches || [];
+    errors.push(...(fallback.errors || []));
+  }
 
-    const standings = Array.isArray(details.data?.standings) ? details.data.standings : [];
+  for (const match of matches) {
+    const standings = Array.isArray(match?.standings) ? match.standings : [];
     const rows = standings.flatMap((group) => Array.isArray(group?.rows) ? group.rows : []);
-
     if (rows.length) {
       return {
         standings: rows,
@@ -113,10 +123,7 @@ export async function GET(request) {
 
         let standings = [];
         if (view === "classification") {
-          const classification = await buildBrasileiraoClassification([
-            ...(yesterdayData.matches || []),
-            ...(todayData.matches || [])
-          ]);
+          const classification = await buildBrasileiraoClassification(competition, region);
           standings = classification.standings;
           errors.push(...classification.errors);
         }
