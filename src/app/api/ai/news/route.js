@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateSportsNews, isOpenAIConfigured } from "../../../lib/openai";
+import { generateSportsNews, isOpenAIConfigured } from "../../../../lib/openai";
 
 export async function GET(request) {
   if (!isOpenAIConfigured()) {
