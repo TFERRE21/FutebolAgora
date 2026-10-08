@@ -3,12 +3,33 @@ import SportsBoard from "./sports-board";
 import BrasileiraoResults from "./brasileirao-results";
 import LatestNews from "./latest-news";
 import FeaturedMatch from "./featured-match";
+import { getMatches } from "../lib/sports-api";
 
 function brDate() {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full" }).format(new Date());
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const now = new Date();
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit"
+  }).format(now);
+  let initialSports = { configured: Boolean(process.env.SPORTS_API_KEY), live: [], scheduled: [], yesterdayResults: [], errors: [] };
+  if (process.env.SPORTS_API_KEY) {
+    try {
+      const result = await getMatches({ sport: "football", date: today, statusIn: "live,scheduled", maxAgeMs: 60000 });
+      const matches = result.matches || [];
+      initialSports = {
+        configured: true,
+        live: matches.filter((g) => g.status === "live"),
+        scheduled: matches.filter((g) => g.status === "scheduled"),
+        yesterdayResults: [],
+        errors: result.errors || []
+      };
+    } catch (error) {
+      initialSports.errors = [{ error: error?.message || "Falha ao carregar os jogos." }];
+    }
+  }
   return <>
     <header className="site-header">
       <div className="header-top"><div className="header-top-inner"><span>{brDate().toUpperCase()}</span><span>Últimas notícias · Resultados · Tabelas · Estatísticas</span></div></div>
@@ -24,9 +45,9 @@ export default function HomePage() {
     <div className="ticker"><div className="ticker-inner"><span className="live">AO VIVO</span><span className="ticker-text"><b>O esporte acontece aqui.</b> Placares, notícias, resultados e estatísticas em tempo real.</span></div></div>
 
     <main className="container">
-      <FeaturedMatch />
+      <FeaturedMatch initialData={initialSports} />
 
-      <SportsBoard />
+      <SportsBoard initialData={initialSports} />
 
       <div className="section-title"><h2>Resultados do Brasileirão</h2><a href="/brasileirao">VER CAMPEONATO →</a></div>
       <section className="panel"><BrasileiraoResults /></section>
