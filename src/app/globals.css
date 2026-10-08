@@ -241,3 +241,5 @@ a { color: inherit; text-decoration: none; }
  .match-body{padding:18px}
  .match-info-grid{grid-template-columns:1fr 1fr}
 }
+
+.match-link{color:inherit;text-decoration:none}.match-link:hover{background:#f8faf9}.br-match-row.match-link{display:grid}.live-match.match-link{display:block}
