@@ -1,6 +1,7 @@
 import { sports } from "../config/sports";
 import SportsBoard from "./sports-board";
 import BrasileiraoResults from "./brasileirao-results";
+import LatestNews from "./latest-news";
 
 const images = {
   hero: [
@@ -15,14 +16,7 @@ const images = {
   esports: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80"
 };
 
-const news = [
-  ["Futebol brasileiro", "A rodada que pode mexer de vez com a tabela do campeonato", images.hero[1], "rodada-brasileirao"],
-  ["Mercado da bola", "Clubes aceleram planejamento e movimentam bastidores", images.stadium, "mercado-da-bola"],
-  ["Análise", "O que observar nos próximos jogos e onde estão os pontos decisivos", images.match, "analise-da-rodada"],
-  ["Basquete", "NBB entra em fase decisiva com grandes confrontos", images.basketball, "nbb-em-foco"],
-  ["Vôlei", "Superliga chega com rodada de alto nível", images.volleyball, "superliga-em-foco"],
-  ["eSports", "Calendário competitivo ganha novos confrontos", images.esports, "esports-em-foco"]
-];
+
 
 function brDate() {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full" }).format(new Date());
@@ -63,13 +57,9 @@ export default function HomePage() {
       <section className="panel"><BrasileiraoResults /></section>
 
       <div className="section-title"><h2>Últimas notícias</h2><a href="/noticias">VER TODAS →</a></div>
-      <section className="content-grid">
-        <div className="news-grid">{news.map(([kicker,title,img,slug]) => <a className="news-card" href={"/noticia/" + slug} key={title}><div className="news-image"><img src={img} alt={title} /></div><div className="news-copy"><div className="kicker">{kicker}</div><h3>{title}</h3><p>Entenda o que aconteceu, por que importa e o que pode acontecer a seguir.</p></div></a>)}</div>
-        <aside className="sidebar">
-          <div className="panel"><h3>📊 Em alta</h3><p><b>1.</b> Brasileirão</p><p><b>2.</b> Mercado da bola</p><p><b>3.</b> Libertadores</p><p><b>4.</b> Seleção Brasileira</p></div>
-          <div className="panel"><h3>📰 Por que ler o FutebolAgora?</h3><p>Notícias com contexto, placares atualizados e explicações objetivas para você entender o que realmente aconteceu.</p></div>
-        </aside>
-      </section>
+      <LatestNews />
+
+>
 
       <div className="section-title"><h2>Todos os esportes</h2><a href="/futebol">EXPLORAR →</a></div>
       <section className="sports-strip">{sports.map((sport) => <a className="sport-pill" href={"/" + sport.slug} key={sport.slug}><strong>{sport.name}</strong><span>{sport.groups.slice(0,3).join(" · ")}</span></a>)}</section>
