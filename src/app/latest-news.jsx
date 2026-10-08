@@ -19,10 +19,12 @@ export default function LatestNews(){
  const [loading,setLoading]=useState(true);
  useEffect(()=>{
   let active=true;
-  fetch("/api/news-feed",{cache:"no-store"})
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),5000);
+  fetch("/api/news-feed",{cache:"no-store",signal:controller.signal})
    .then(r=>r.json()).then(d=>{if(active&&Array.isArray(d.articles))setArticles(d.articles)})
-   .catch(()=>{}).finally(()=>active&&setLoading(false));
-  return()=>{active=false};
+   .catch(()=>{}).finally(()=>{clearTimeout(timeout);if(active)setLoading(false)});
+  return()=>{active=false;controller.abort();clearTimeout(timeout)};
  },[]);
  if(loading&&!articles.length)return <div className="news-loading">Atualizando notícias, times, jogadores e informações da rodada…</div>;
  if(!articles.length)return <div className="news-loading">As notícias automáticas estão sendo atualizadas.</div>;
