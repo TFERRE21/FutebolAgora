@@ -45,11 +45,22 @@ export default async function SectionPage({ params, searchParams }) {
         </div></nav>
       </header>
       <main className="container">
-        <div className="section-title"><h1>{page.title}</h1></div>
+        <section className="section-masthead">
+          <div className="section-breadcrumb">FutebolAgora <span>›</span> {page.title}</div>
+          <div className="section-masthead-grid">
+            <div>
+              <div className="kicker">CENTRAL ESPORTIVA</div>
+              <h1>{page.title}</h1>
+              <p>{page.intro}</p>
+            </div>
+            <div className="section-feature-list">
+              <span>🔴 Ao vivo</span><span>📅 Próximos jogos</span><span>📊 Estatísticas</span><span>🏆 Resultados</span>
+            </div>
+          </div>
+        </section>
         <section className="panel section-intro">
-          <div className="kicker">FutebolAgora</div>
-          <h2>{page.title}</h2>
-          <p>{page.intro}</p>
+          <div className="section-intro-label">NAVEGAÇÃO DO CAMPEONATO</div>
+          <p>Escolha uma visão para acompanhar os jogos, resultados e informações desta seção.</p>
           <div className="section-links">
             {isBrasileirao ? <><Link className={view === "overview" ? "active" : ""} href="/brasileirao">Série A</Link><Link className={view === "classification" ? "active" : ""} href="/brasileirao?view=classification">Classificação</Link><Link className={view === "results" ? "active" : ""} href="/brasileirao?view=results">Resultados</Link><Link className={view === "upcoming" ? "active" : ""} href="/brasileirao?view=upcoming">Próximos jogos</Link></> : page.groups.map((group) => <span key={group}>{group}</span>)}
           </div>
