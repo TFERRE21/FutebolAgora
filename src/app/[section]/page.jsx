@@ -26,9 +26,12 @@ const filters = {
   noticias: {}
 };
 
-export default async function SectionPage({ params }) {
+export default async function SectionPage({ params, searchParams }) {
   const { section } = await params;
   const page = sections[section] || sections.futebol;
+  const query = await searchParams;
+  const view = query?.view || "overview";
+  const isBrasileirao = section === "brasileirao";
 
   return (
     <>
@@ -47,10 +50,10 @@ export default async function SectionPage({ params }) {
           <h2>{page.title}</h2>
           <p>{page.intro}</p>
           <div className="section-links">
-            {page.groups.map((group) => <span key={group}>{group}</span>)}
+            {isBrasileirao ? <><Link className={view === "overview" ? "active" : ""} href="/brasileirao">Série A</Link><Link className={view === "classification" ? "active" : ""} href="/brasileirao?view=classification">Classificação</Link><Link className={view === "results" ? "active" : ""} href="/brasileirao?view=results">Resultados</Link><Link className={view === "upcoming" ? "active" : ""} href="/brasileirao?view=upcoming">Próximos jogos</Link></> : page.groups.map((group) => <span key={group}>{group}</span>)}
           </div>
         </section>
-        <SportsBoard filter={filters[section] || {}} />
+        <SportsBoard filter={filters[section] || {}} view={view} />
         <div className="section-title"><h2>Principais páginas</h2></div>
         <section className="sports-strip">
           <Link className="sport-pill" href="/brasileirao"><strong>Brasileirão</strong><span>Resultados e classificação</span></Link>
