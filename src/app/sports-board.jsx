@@ -95,7 +95,7 @@ export default function SportsBoard({ filter = {}, view = "overview", initialDat
     }
   }
   useEffect(() => {
-    load();
+    if (!initialData) load();
     const timer = setInterval(load, 30000);
     return () => clearInterval(timer);
   }, [JSON.stringify(filter), view]);
