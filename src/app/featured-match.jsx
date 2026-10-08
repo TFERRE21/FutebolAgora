@@ -110,7 +110,7 @@ export default function FeaturedMatch({ filter = {}, initialData = null }) {
         clearTimeout(timeout);
       }
     };
-    load();
+    if (!initialData) load();
     const timer = setInterval(load, 60000);
     return () => clearInterval(timer);
   }, []);
