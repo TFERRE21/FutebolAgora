@@ -147,3 +147,13 @@ a { color: inherit; text-decoration: none; }
   .br-team { font-size:11px; }
   .br-team img { width:22px; height:22px; }
 }
+
+
+/* Abas e tabela de classificação */
+.section-links a{display:inline-flex;align-items:center;text-decoration:none;color:inherit;background:#fff;border:1px solid #dfe5e8;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:700}
+.section-links a.active{background:#10243d;color:#fff;border-color:#10243d}
+.standings-wrap{overflow-x:auto}.standings-table{width:100%;border-collapse:collapse;font-size:13px}
+.standings-table th,.standings-table td{padding:11px 8px;border-bottom:1px solid #edf0f2;text-align:center;white-space:nowrap}
+.standings-table th:nth-child(2),.standings-table td:nth-child(2){text-align:left}
+.standing-team{display:flex;align-items:center;gap:8px}.standing-team img{width:25px;height:25px;object-fit:contain}
+.standings-table tbody tr:hover{background:#f7f9fa}
