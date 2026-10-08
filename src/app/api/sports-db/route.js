@@ -62,10 +62,8 @@ export async function GET(request) {
       year: "numeric", month: "2-digit", day: "2-digit"
     }).format(new Date(now.getTime() - 86400000));
 
-    const [todayResult, yesterdayResult] = await Promise.all([
-      getMatches({ sport, date, statusIn: "live,scheduled", maxAgeMs: 60000 }),
-      getMatches({ sport, date: yesterdayDate, status: "finished", maxAgeMs: 10 * 60000 })
-    ]);
+    const todayResult = await getMatches({ sport, date, statusIn: "live,scheduled", maxAgeMs: 60000 });
+    const yesterdayResult = { matches: [], errors: [] };
 
     const todayMatches = todayResult.matches || [];
     const data = {
