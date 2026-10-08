@@ -12,7 +12,7 @@ const sections = {
   basquete: { title: "Basquete", intro: "NBA, NBB e principais competições de basquete.", groups: sports.find((s) => s.slug === "basquete")?.groups || [] },
   futsal: { title: "Futsal", intro: "Jogos, resultados e competições de futsal.", groups: sports.find((s) => s.slug === "futsal")?.groups || [] },
   esports: { title: "eSports", intro: "Competições e confrontos dos principais jogos competitivos.", groups: sports.find((s) => s.slug === "esports")?.groups || [] },
-  noticias: { title: "Últimas notícias", intro: "Notícias e análises esportivas do FutebolAgora.", groups: [] }
+  noticias: { title: "Últimas notícias", intro: "Notícias e análises esportivas do Arena Agora.", groups: [] }
 };
 
 const filters = {
@@ -46,10 +46,10 @@ export default async function SectionPage({ params, searchParams }) {
       </header>
       <main className="container">
         <section className="section-masthead">
-          <div className="section-breadcrumb">FutebolAgora <span>›</span> {page.title}</div>
+          <div className="section-breadcrumb">Arena Agora <span>›</span> {page.title}</div>
           <div className="section-masthead-grid">
             <div>
-              <div className="kicker">CENTRAL ESPORTIVA</div>
+              <div className="kicker">ARENA AGORA · CENTRAL ESPORTIVA</div>
               <h1>{page.title}</h1>
               <p>{page.intro}</p>
             </div>
@@ -76,7 +76,7 @@ export default async function SectionPage({ params, searchParams }) {
           <Link className="sport-pill" href="/basquete"><strong>Basquete</strong><span>NBA e NBB</span></Link>
         </section>
       </main>
-      <footer className="footer"><div className="footer-inner"><b>FutebolAgora</b><small>Resultados, jogos e notícias esportivas.</small></div></footer>
+      <footer className="footer"><div className="footer-inner"><b>Arena Agora</b><small>O esporte acontece aqui.</small></div></footer>
     </>
   );
 }
