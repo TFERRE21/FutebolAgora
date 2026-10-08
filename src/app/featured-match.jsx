@@ -84,7 +84,10 @@ export default function FeaturedMatch({ filter = {}, initialData = null }) {
       try {
         const query = new URLSearchParams(filter).toString();
         const section = filter.competition === "Serie A" ? "brasileirao" : filter.competition === "Libertadores" ? "libertadores" : filter.sport === "volleyball" ? "volei" : filter.sport === "basketball" ? "basquete" : filter.sport === "futsal" ? "futsal" : filter.sport === "esports" ? "esports" : "futebol";
-        const response = await fetch("/api/sports-db?section=" + section, { cache: "no-store", signal: controller.signal });
+        const endpoint = Object.keys(filter).length
+          ? "/api/sports" + (query ? "?" + query : "")
+          : "/api/sports-db?section=" + section;
+        const response = await fetch(endpoint, { cache: "no-store", signal: controller.signal });
         const json = await response.json();
         if (json?.data) {
           setData(json.data);
