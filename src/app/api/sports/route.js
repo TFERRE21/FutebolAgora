@@ -130,6 +130,7 @@ export async function GET(request) {
 
   const today = dateBR(0);
   const yesterday = dateBR(-1);
+  const nextDates = [0, 1, 2].map((offset) => dateBR(offset));
 
   if (!process.env.SPORTS_API_KEY) {
     return NextResponse.json({
@@ -176,13 +177,17 @@ export async function GET(request) {
           });
         }
 
+        const futureDates = view === "upcoming" ? nextDates : [today];
+        const futureResults = await Promise.all(futureDates.map((date) =>
+          getBrasileiraoMatches(competition, region, null, date, 60 * 1000)
+        ));
         const [todayData, yesterdayData] = await Promise.all([
           getBrasileiraoMatches(competition, region, null, today, 60 * 1000),
           getBrasileiraoMatches(competition, region, "finished", yesterday, 10 * 60 * 1000)
         ]);
 
-        const allToday = dedupeMatches(todayData.matches || []);
-        const errors = [...(todayData.errors || []), ...(yesterdayData.errors || [])];
+        const allToday = dedupeMatches(futureResults.flatMap((item) => item.matches || []));
+        const errors = [...futureResults.flatMap((item) => item.errors || []), ...(yesterdayData.errors || [])];
 
         const standings = [];
 
@@ -212,6 +217,16 @@ export async function GET(request) {
         });
       }
 
+      const futureDates = view === "upcoming" ? nextDates : [today];
+      const futureResults = await Promise.all(futureDates.map((date) => getFilteredMatches({
+        sport,
+        date,
+        statusIn: "live,scheduled",
+        competition,
+        region,
+        team,
+        maxAgeMs: sport === "football" ? 60 * 1000 : SPORT_CACHE_MS
+      })));
       const [todayData, yesterdayData] = await Promise.all([
         getFilteredMatches({
           sport,
@@ -233,7 +248,7 @@ export async function GET(request) {
         })
       ]);
 
-      const allToday = todayData.matches || [];
+      const allToday = dedupeMatches(futureResults.flatMap((item) => item.matches || []));
       const payload = {
         updatedAt: new Date().toISOString(),
         today,
