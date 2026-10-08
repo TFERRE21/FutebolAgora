@@ -2,7 +2,8 @@ import Link from "next/link";
 import SportsBoard from "../sports-board";
 import FeaturedMatch from "../featured-match";
 import { sports } from "../../config/sports";
-import { getMatches, getFilteredMatches } from "../../lib/sports-api";
+import { getMatches, getFilteredMatches, getMatchDetails } from "../../lib/sports-api";
+import { generateBrasileiraoClassification, isOpenAIConfigured } from "../../lib/openai";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -31,6 +32,8 @@ function dateBR(days = 0) {
   const d = Number(parts.find((p) => p.type === "day").value);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
+
+let serverClassificationCache = { expiresAt: 0, value: null };
 
 async function loadInitialData(section, view, filter) {
   const configured = Boolean(process.env.SPORTS_API_KEY);
@@ -69,25 +72,63 @@ async function loadInitialData(section, view, filter) {
     };
 
     if (view === "classification") {
-      const result = await getFilteredMatches({
-        sport: "football",
-        competition: filter.competition || "Serie A",
-        region: filter.region || "Brasil",
-        hasStandings: true,
-        maxAgeMs: 30 * 60 * 1000
-      });
-      const standings = (result.matches || []).flatMap((match) =>
+      const cached = serverClassificationCache;
+      if (cached.value && Date.now() < cached.expiresAt) return cached.value;
+
+      const [todayResult, standingsResult] = await Promise.all([
+        getFilteredMatches({
+          sport: "football",
+          competition: filter.competition || "Serie A",
+          region: filter.region || "Brasil",
+          date: today,
+          statusIn: "live,scheduled",
+          maxAgeMs: 60 * 1000
+        }),
+        getFilteredMatches({
+          sport: "football",
+          competition: filter.competition || "Serie A",
+          region: filter.region || "Brasil",
+          hasStandings: true,
+          maxAgeMs: 30 * 60 * 1000
+        })
+      ]);
+
+      const errors = [...(todayResult.errors || []), ...(standingsResult.errors || [])];
+      let standings = (standingsResult.matches || []).flatMap((match) =>
         Array.isArray(match?.standings)
           ? match.standings.flatMap((group) => Array.isArray(group?.rows) ? group.rows : [])
           : []
       );
-      return {
+
+      if (!standings.length && (standingsResult.matches || []).length) {
+        const details = await getMatchDetails(standingsResult.matches[0].id, "football", 30 * 60 * 1000);
+        standings = (details.data?.standings || []).flatMap((group) => Array.isArray(group?.rows) ? group.rows : []);
+        if (!details.ok && details.error) {
+          errors.push({ endpoint: "/games/:id/details", status: details.status, error: details.error });
+        }
+      }
+
+      if (!standings.length && isOpenAIConfigured()) {
+        try {
+          const web = await generateBrasileiraoClassification();
+          standings = web.standings || [];
+          errors.push({ endpoint: "OpenAI Web Search", error: "Classificação confirmada por pesquisa web porque a SportsAPI não forneceu standings." });
+        } catch (error) {
+          errors.push({ endpoint: "OpenAI Web Search", error: error?.message || "Falha ao pesquisar a classificação atual." });
+        }
+      }
+
+      const value = {
         ...empty,
         today,
         yesterday,
+        live: (todayResult.matches || []).filter((g) => g.status === "live"),
+        scheduled: (todayResult.matches || []).filter((g) => g.status === "scheduled"),
         standings,
-        errors: result.errors || []
+        errors
       };
+      serverClassificationCache = { expiresAt: Date.now() + 5 * 60 * 1000, value };
+      return value;
     }
 
     const results = await Promise.all(dates.map(loadDate));
