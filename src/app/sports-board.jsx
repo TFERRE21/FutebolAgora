@@ -47,6 +47,22 @@ export default function SportsBoard() {
   </section>;
 
   return <section className="score-columns">
+    {data.errors?.length > 0 && (
+      <div className="panel api-warning" style={{ gridColumn: "1 / -1" }}>
+        <h3>⚠️ SportsAPI</h3>
+        <p>Conexão realizada, mas a API retornou avisos. Confira abaixo:</p>
+        <ul>
+          {data.errors.slice(0, 5).map((item, index) => (
+            <li key={index}>
+              {item.sport ? <strong>{item.sport}: </strong> : null}
+              {item.status ? `HTTP ${item.status} — ` : ""}
+              {item.error || "Resposta sem dados"}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
     <div className="panel">
       <div className="score-head"><h3>🔴 Ao vivo agora</h3><span>{data.live.length} partidas</span></div>
       {data.live.length ? data.live.slice(0, 8).map((g) => <Match key={g.id} game={g} live />) : <p className="empty-score">Nenhuma partida ao vivo neste momento.</p>}
