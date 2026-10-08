@@ -2,7 +2,7 @@ import Link from "next/link";
 import SportsBoard from "../sports-board";
 import FeaturedMatch from "../featured-match";
 import { sports } from "../../config/sports";
-import { getMatches, getFilteredMatches } from "../../lib/sports-api";
+import { getMatches, getFilteredMatches } from "../../lib/sports-api";\n\nexport const dynamic = "force-dynamic";\nexport const revalidate = 0;
 
 const sections = {
   futebol: { title: "Futebol", intro: "Jogos, resultados, agenda e principais competições do futebol.", groups: sports.find((s) => s.slug === "futebol")?.groups || [] },
