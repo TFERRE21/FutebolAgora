@@ -80,7 +80,7 @@ export default function FeaturedMatch({ filter = {} }) {
   useEffect(() => {
     const load = async () => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6500);
+      const timeout = setTimeout(() => controller.abort(), 5000);
       try {
         const query = new URLSearchParams(filter).toString();
         const section = filter.competition === "Serie A" ? "brasileirao" : filter.competition === "Libertadores" ? "libertadores" : filter.sport === "volleyball" ? "volei" : filter.sport === "basketball" ? "basquete" : filter.sport === "futsal" ? "futsal" : filter.sport === "esports" ? "esports" : "futebol";
