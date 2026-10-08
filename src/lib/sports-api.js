@@ -8,17 +8,22 @@ const detailsCache = new Map();
 async function request(path) {
   if (!API_KEY) return { ok: false, configured: false, data: {}, error: "SPORTS_API_KEY ausente" };
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
   try {
     let response = await fetch(BASE_URL + path, {
       headers: { "X-API-Key": API_KEY, Accept: "application/json" },
-      cache: "no-store"
+      cache: "no-store",
+      signal: controller.signal
     });
 
     if (response.status === 502) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       response = await fetch(BASE_URL + path, {
         headers: { "X-API-Key": API_KEY, Accept: "application/json" },
-        cache: "no-store"
+        cache: "no-store",
+        signal: controller.signal
       });
     }
 
@@ -39,7 +44,14 @@ async function request(path) {
 
     return { ok: true, configured: true, status: response.status, data };
   } catch (error) {
-    return { ok: false, configured: true, data: {}, error: error?.message || "Falha de conexão com SportsAPI" };
+    return {
+      ok: false,
+      configured: true,
+      data: {},
+      error: error?.name === "AbortError" ? "SportsAPI demorou mais de 5s para responder." : (error?.message || "Falha de conexão com SportsAPI")
+    };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
