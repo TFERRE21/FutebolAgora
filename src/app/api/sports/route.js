@@ -20,11 +20,34 @@ function dateBR(days = 0) {
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
+
+function normalizeTeamName(name = "") {
+  return String(name)
+    .normalize("NFD")
+    .replace(/[\\u0300-\\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function dedupeMatches(matches = []) {
+  const seen = new Map();
+  for (const match of matches) {
+    const home = normalizeTeamName(match?.homeTeam?.name);
+    const away = normalizeTeamName(match?.awayTeam?.name);
+    const date = match?.startTime ? new Date(match.startTime).toISOString().slice(0, 10) : "";
+    const status = match?.status || "";
+    if (!home || !away) continue;
+    const key = `${date}|${status}|${home}|${away}`;
+    const current = seen.get(key);
+    if (!current || Object.keys(match).length > Object.keys(current).length) seen.set(key, match);
+  }
+  return Array.from(seen.values()).sort((a, b) => new Date(a?.startTime || 0) - new Date(b?.startTime || 0));
+}
 async function getBrasileiraoMatches(competition, region, status, date, maxAgeMs) {
   const first = await getFilteredMatches({ sport: "football", date, status, competition, region, maxAgeMs });
 
   if (!first.matches.length && competition === "Serie A") {
-    return getFilteredMatches({
+    const fallback = await getFilteredMatches({
       sport: "football",
       date,
       status,
@@ -32,9 +55,10 @@ async function getBrasileiraoMatches(competition, region, status, date, maxAgeMs
       region,
       maxAgeMs
     });
+    return { ...fallback, matches: dedupeMatches(fallback.matches || []) };
   }
 
-  return first;
+  return { ...first, matches: dedupeMatches(first.matches || []) };
 }
 
 async function buildBrasileiraoClassification(competition, region) {
@@ -157,7 +181,7 @@ export async function GET(request) {
           getBrasileiraoMatches(competition, region, "finished", yesterday, 10 * 60 * 1000)
         ]);
 
-        const allToday = todayData.matches || [];
+        const allToday = dedupeMatches(todayData.matches || []);
         const errors = [...(todayData.errors || []), ...(yesterdayData.errors || [])];
 
         const standings = [];
@@ -170,8 +194,8 @@ export async function GET(request) {
           sports: todayData.sports,
           live: allToday.filter((g) => g.status === "live"),
           scheduled: allToday.filter((g) => g.status === "scheduled"),
-          yesterdayResults: yesterdayData.matches || [],
-          brasileiraoResults: yesterdayData.matches || [],
+          yesterdayResults: dedupeMatches(yesterdayData.matches || []),
+          brasileiraoResults: dedupeMatches(yesterdayData.matches || []),
           standings,
           view,
           errors
