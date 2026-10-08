@@ -55,11 +55,12 @@ function normalizeStats(data, game) {
 }
 
 export async function GET(request) {
+  const sport = new URL(request.url).searchParams.get("sport") || "football";
   const ids = [...new Set((new URL(request.url).searchParams.get("ids") || "").split(",").map((id) => id.trim()).filter(Boolean))].slice(0, 4);
   if (!ids.length) return NextResponse.json({ matches: [] });
   const matches = [];
   for (const id of ids) {
-    const result = await getMatchDetails(id, "football", 30 * 60 * 1000);
+    const result = await getMatchDetails(id, sport, 30 * 60 * 1000);
     if (!result?.ok) continue;
     const game = result.data?.game || result.data?.match || result.data;
     matches.push({ id, game, stats: normalizeStats(result.data || {}, game) });
