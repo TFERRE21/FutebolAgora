@@ -72,8 +72,8 @@ function timeLabel(game) {
   }).format(new Date(game.startTime));
 }
 
-export default function FeaturedMatch({ filter = {} }) {
-  const [data, setData] = useState(null);
+export default function FeaturedMatch({ filter = {}, initialData = null }) {
+  const [data, setData] = useState(initialData);
   const [error, setError] = useState("");
   const [realImage, setRealImage] = useState("");
 
