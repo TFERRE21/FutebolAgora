@@ -65,6 +65,75 @@ export async function generateSportsNews({ topic = "futebol brasileiro", count =
   };
 }
 
+export async function generateBrasileiraoClassification() {
+  if (!client) throw new Error("OPENAI_API_KEY não configurada.");
+
+  const model = process.env.OPENAI_MODEL || "gpt-5.6";
+  const response = await client.responses.create({
+    model,
+    tools: [{ type: "web_search" }],
+    input: [
+      {
+        role: "system",
+        content: [{
+          type: "input_text",
+          text: [
+            "Você é um verificador de dados esportivos do FutebolAgora.",
+            "Pesquise na web a classificação ATUAL do Campeonato Brasileiro Série A de 2026.",
+            "Priorize fontes confiáveis e atuais, especialmente CBF e grandes portais esportivos.",
+            "Não invente nenhum número. Se as fontes divergirem, use a informação mais recente e confiável.",
+            "Responda SOMENTE JSON válido, sem markdown.",
+            "Retorne exatamente um objeto com a chave standings.",
+            "standings deve ser um array de clubes com: position, teamName, played, won, drew, lost, goalsFor, goalsAgainst, goalDiff, points."
+          ].join("\n")
+        }]
+      },
+      {
+        role: "user",
+        content: [{
+          type: "input_text",
+          text: "Qual é a classificação atual completa do Brasileirão Série A 2026? Inclua todos os clubes e os números atuais."
+        }]
+      }
+    ]
+  });
+
+  const clean = (response.output_text || "")
+    .replace(/^\s*\`\`\`json\s*/i, "")
+    .replace(/\s*\`\`\`\s*$/i, "")
+    .trim();
+
+  let parsed;
+  try {
+    parsed = JSON.parse(clean);
+  } catch {
+    throw new Error("OpenAI não retornou a classificação em JSON válido.");
+  }
+
+  const standings = Array.isArray(parsed) ? parsed : parsed.standings;
+  if (!Array.isArray(standings) || standings.length < 10) {
+    throw new Error("A pesquisa não retornou uma classificação completa do Brasileirão.");
+  }
+
+  return {
+    standings: standings.map((row, index) => ({
+      position: Number(row.position) || index + 1,
+      teamName: row.teamName || row.name || "Time",
+      played: Number(row.played) || 0,
+      won: Number(row.won) || 0,
+      drew: Number(row.drew ?? row.drawn) || 0,
+      lost: Number(row.lost) || 0,
+      goalsFor: Number(row.goalsFor) || 0,
+      goalsAgainst: Number(row.goalsAgainst) || 0,
+      goalDiff: Number(row.goalDiff) || 0,
+      points: Number(row.points) || 0,
+      source: "web"
+    })),
+    model,
+    updatedAt: new Date().toISOString()
+  };
+}
+
 export async function generateSportsImage({ prompt, size = "1536x1024" }) {
   if (!client) throw new Error("OPENAI_API_KEY não configurada.");
 
