@@ -1,6 +1,5 @@
 const BASE_URL = process.env.SPORTS_API_BASE_URL || "https://sportsapi.com.br/api/v1";
 const API_KEY = process.env.SPORTS_API_KEY;
-const SPORTS = ["football", "basketball", "volleyball", "baseball", "futsal", "esports"];
 
 async function request(path) {
   if (!API_KEY) return { matches: [], configured: false };
@@ -12,11 +11,18 @@ async function request(path) {
   return response.json();
 }
 
-export async function getMatches({ date, statusIn, sport }) {
-  const sports = sport ? [sport] : SPORTS;
+export async function getAvailableSports() {
+  const data = await request("/sports");
+  return data.sports || [];
+}
+
+export async function getMatches({ date, status, sport }) {
+  const sports = sport ? [sport] : await getAvailableSports();
   const results = await Promise.allSettled(
     sports.map((item) => {
-      const params = new URLSearchParams({ sport: item, date, statusIn, limit: "100", offset: "0" });
+      const slug = item.slug || item.sport || item;
+      const params = new URLSearchParams({ sport: slug, status, limit: "100", offset: "0" });
+      if (date) params.set("date", date);
       return request("/games?" + params.toString());
     })
   );
