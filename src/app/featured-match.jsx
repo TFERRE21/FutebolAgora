@@ -42,8 +42,11 @@ function scoreMatch(game) {
   if (text.includes("libertadores")) score += 210;
   if (text.includes("champions")) score += 200;
   if (BIG_TEAMS.some((team) => text.includes(clean(team)))) score += 45;
-  if (BIG_TEAMS.some((team) => text.includes(clean(team))) &&
-      BIG_TEAMS.some((team) => text.includes(clean(team)))) score += 25;
+  const homeName = clean(game?.homeTeam?.name);
+  const awayName = clean(game?.awayTeam?.name);
+  const homeBig = BIG_TEAMS.some((team) => homeName.includes(clean(team)));
+  const awayBig = BIG_TEAMS.some((team) => awayName.includes(clean(team)));
+  if (homeBig && awayBig) score += 70;
   if (game?.status === "scheduled" && game?.startTime) {
     const hours = Math.abs(new Date(game.startTime).getTime() - Date.now()) / 3600000;
     score += Math.max(0, 30 - Math.min(hours, 30));
