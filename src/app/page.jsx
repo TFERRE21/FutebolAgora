@@ -1,5 +1,6 @@
 import { sports } from "../config/sports";
 import SportsBoard from "./sports-board";
+import BrasileiraoResults from "./brasileirao-results";
 
 const images = {
   hero: [
@@ -59,7 +60,7 @@ export default function HomePage() {
       <SportsBoard />
 
       <div className="section-title"><h2>Resultados do Brasileirão</h2><a href="/brasileirao">VER CAMPEONATO →</a></div>
-      <section className="panel"><div id="brasileirao-results"><p className="empty-score">Os resultados do Brasileirão são atualizados junto com o placar.</p></div></section>
+      <section className="panel"><BrasileiraoResults /></section>
 
       <div className="section-title"><h2>Últimas notícias</h2><a href="/noticias">VER TODAS →</a></div>
       <section className="content-grid">
