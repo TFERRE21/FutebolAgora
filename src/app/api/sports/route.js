@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getMatches } from "../../../lib/sports-api";
 
+let responseCache = { expiresAt: 0, payload: null };
+
 function dateBR(days = 0) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Sao_Paulo",
@@ -17,6 +19,16 @@ function dateBR(days = 0) {
 }
 
 export async function GET() {
+  const now = Date.now();
+  if (responseCache.payload && now < responseCache.expiresAt) {
+    return NextResponse.json(responseCache.payload, {
+      headers: {
+        "Cache-Control": "no-store",
+        "X-Sports-Cache": "HIT"
+      }
+    });
+  }
+
   const today = dateBR(0);
   const yesterday = dateBR(-1);
 
@@ -33,32 +45,40 @@ export async function GET() {
   }
 
   try {
-    // Para jogos ao vivo, não prendemos a consulta a uma data:
-    // a própria API trabalha com status=live e isso evita diferença de fuso UTC.
-    const [liveNow, scheduledToday, finishedYesterday] = await Promise.all([
-      getMatches({ status: "live" }),
-      getMatches({ date: today, status: "scheduled" }),
+    // Reduzimos drasticamente as chamadas:
+    // 1) hoje: live + scheduled em uma única consulta por esporte
+    // 2) ontem: finished em uma única consulta por esporte
+    // /sports fica em cache por 1 hora e o resultado desta rota por 60s.
+    const [todayData, yesterdayData] = await Promise.all([
+      getMatches({ date: today, statusIn: "live,scheduled" }),
       getMatches({ date: yesterday, status: "finished" })
     ]);
 
-    const errors = [
-      ...liveNow.errors,
-      ...scheduledToday.errors,
-      ...finishedYesterday.errors
-    ];
+    const live = todayData.matches.filter((game) => game.status === "live");
+    const scheduled = todayData.matches.filter((game) => game.status === "scheduled");
 
-    return NextResponse.json({
+    const payload = {
       updatedAt: new Date().toISOString(),
       today,
       yesterday,
       configured: true,
-      sports: liveNow.sports,
-      live: liveNow.matches,
-      scheduled: scheduledToday.matches,
-      yesterdayResults: finishedYesterday.matches,
-      errors
-    }, {
-      headers: { "Cache-Control": "no-store" }
+      sports: todayData.sports,
+      live,
+      scheduled,
+      yesterdayResults: yesterdayData.matches,
+      errors: [...todayData.errors, ...yesterdayData.errors]
+    };
+
+    responseCache = {
+      payload,
+      expiresAt: now + 60 * 1000
+    };
+
+    return NextResponse.json(payload, {
+      headers: {
+        "Cache-Control": "no-store",
+        "X-Sports-Cache": "MISS"
+      }
     });
   } catch (error) {
     return NextResponse.json({
@@ -68,9 +88,7 @@ export async function GET() {
       live: [],
       scheduled: [],
       yesterdayResults: [],
-      errors: [{
-        error: error?.message || "Erro interno ao consultar SportsAPI"
-      }]
+      errors: [{ error: error?.message || "Erro interno ao consultar SportsAPI" }]
     }, {
       status: 200,
       headers: { "Cache-Control": "no-store" }
