@@ -181,10 +181,14 @@ export async function GET(request) {
         const futureResults = await Promise.all(futureDates.map((date) =>
           getBrasileiraoMatches(competition, region, null, date, 60 * 1000)
         ));
-        const [todayData, yesterdayData] = await Promise.all([
-          getBrasileiraoMatches(competition, region, null, today, 60 * 1000),
-          getBrasileiraoMatches(competition, region, "finished", yesterday, 10 * 60 * 1000)
-        ]);
+        const todayData = futureResults[0] || { matches: [], sports: [{ slug: "football", sport: "football" }], errors: [] };
+        const yesterdayData = await getBrasileiraoMatches(
+          competition,
+          region,
+          "finished",
+          yesterday,
+          10 * 60 * 1000
+        );
 
         const allToday = dedupeMatches(futureResults.flatMap((item) => item.matches || []));
         const errors = [...futureResults.flatMap((item) => item.errors || []), ...(yesterdayData.errors || [])];
@@ -227,26 +231,16 @@ export async function GET(request) {
         team,
         maxAgeMs: sport === "football" ? 60 * 1000 : SPORT_CACHE_MS
       })));
-      const [todayData, yesterdayData] = await Promise.all([
-        getFilteredMatches({
-          sport,
-          date: today,
-          statusIn: "live,scheduled",
-          competition,
-          region,
-          team,
-          maxAgeMs: sport === "football" ? 60 * 1000 : SPORT_CACHE_MS
-        }),
-        getFilteredMatches({
-          sport,
-          date: yesterday,
-          status: "finished",
-          competition,
-          region,
-          team,
-          maxAgeMs: 10 * 60 * 1000
-        })
-      ]);
+      const todayData = futureResults[0] || { matches: [], sports: [{ slug: sport, sport }], errors: [] };
+      const yesterdayData = await getFilteredMatches({
+        sport,
+        date: yesterday,
+        status: "finished",
+        competition,
+        region,
+        team,
+        maxAgeMs: 10 * 60 * 1000
+      });
 
       const allToday = dedupeMatches(futureResults.flatMap((item) => item.matches || []));
       const payload = {
