@@ -53,7 +53,7 @@ export default function SportsBoard({ filter = {}, view = "overview" }) {
   const [data, setData] = useState(null);
   async function load() {
     const controller = new AbortController();
-    const timeoutMs = view === "classification" ? 15000 : 9000;
+    const timeoutMs = view === "classification" ? 12000 : 5000;
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const effectiveFilter = Object.keys(filter).length ? filter : { sport: "football" };
@@ -75,7 +75,7 @@ export default function SportsBoard({ filter = {}, view = "overview" }) {
         standings: [],
         errors: [{
           error: error?.name === "AbortError"
-            ? "A consulta demorou mais de 8 segundos. Tente novamente."
+            ? "A consulta esportiva demorou mais de 5 segundos. A página continuará funcionando com os demais conteúdos."
             : "Não foi possível carregar os dados esportivos."
         }]
       });
