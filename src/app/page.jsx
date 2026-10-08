@@ -11,9 +11,9 @@ function brDate() {
 export default function HomePage() {
   return <>
     <header className="site-header">
-      <div className="header-top"><div className="header-top-inner"><span>{brDate().toUpperCase()}</span><span>Últimas notícias · Resultados · Tabelas</span></div></div>
+      <div className="header-top"><div className="header-top-inner"><span>{brDate().toUpperCase()}</span><span>Últimas notícias · Resultados · Tabelas · Estatísticas</span></div></div>
       <div className="header-main">
-        <a className="brand" href="/"><b className="brand-mark">⚽</b><span>Futebol</span>Agora</a>
+        <a className="brand" href="/"><b className="brand-mark"><span>AA</span></b><span>Arena</span>Agora</a>
         <div className="search">🔎 &nbsp; Buscar notícia, time ou campeonato</div>
       </div>
       <nav className="nav"><div className="nav-inner">
@@ -21,7 +21,7 @@ export default function HomePage() {
       </div></nav>
     </header>
 
-    <div className="ticker"><div className="ticker-inner"><span className="live">AO VIVO</span><span className="ticker-text">Placar, resultados e agenda atualizados automaticamente. Acompanhe o esporte em tempo real.</span></div></div>
+    <div className="ticker"><div className="ticker-inner"><span className="live">AO VIVO</span><span className="ticker-text"><b>O esporte acontece aqui.</b> Placares, notícias, resultados e estatísticas em tempo real.</span></div></div>
 
     <main className="container">
       <FeaturedMatch />
@@ -39,6 +39,6 @@ export default function HomePage() {
       <section className="sports-strip">{sports.map((sport) => <a className="sport-pill" href={"/" + sport.slug} key={sport.slug}><strong>{sport.name}</strong><span>{sport.groups.slice(0,3).join(" · ")}</span></a>)}</section>
     </main>
 
-    <footer className="footer"><div className="footer-inner"><div><b>FutebolAgora</b><br/><small>Informação esportiva, resultados e notícias em um só lugar.</small></div><small>© 2026 FutebolAgora</small></div></footer>
+    <footer className="footer"><div className="footer-inner"><div><b>Arena Agora</b><br/><small>O esporte acontece aqui. Notícias, jogos, resultados e estatísticas.</small></div><small>© 2026 Arena Agora</small></div></footer>
   </>;
 }
