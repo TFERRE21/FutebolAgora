@@ -46,7 +46,7 @@ export async function GET(request) {
   }
 
   try {
-    const sports = await import("../../../../lib/sports-api");
+    const sports = await import("../../../lib/sports-api");
     const result = await sports.getMatchDetails(id, "football", 30 * 60 * 1000);
     const game = result?.data?.game || result?.data?.match || result?.data;
     const home = game?.homeTeam?.name || game?.home?.name || "";
