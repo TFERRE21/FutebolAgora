@@ -1,0 +1,21 @@
+name: Daily Sports News
+
+on:
+  schedule:
+    # 00:00 America/Sao_Paulo = 03:00 UTC
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  daily-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - run: node scripts/daily-news.mjs
+        env:
+          TZ: America/Sao_Paulo
