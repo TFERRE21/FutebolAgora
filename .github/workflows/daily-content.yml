@@ -1,0 +1,19 @@
+name: Arena Agora - atualização diária
+
+on:
+  schedule:
+    - cron: "5 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Atualizar banco de conteúdo
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$SITE_URL"
+          test -n "$CRON_SECRET"
+          curl --fail --show-error --silent             -H "Authorization: Bearer $CRON_SECRET"             "$SITE_URL/api/admin/daily-update"
