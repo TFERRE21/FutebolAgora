@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getMatches } from "../../../lib/sports-api";
+import { getAvailableSports, getMatches } from "../../../lib/sports-api";
 
 let responseCache = { expiresAt: 0, payload: null };
 
@@ -13,18 +13,10 @@ function dateBR(days = 0) {
     month: "2-digit",
     day: "2-digit"
   }).formatToParts(new Date());
-
   const y = Number(parts.find((p) => p.type === "year").value);
   const m = Number(parts.find((p) => p.type === "month").value);
   const d = Number(parts.find((p) => p.type === "day").value);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
-}
-
-function normalizeSports(list) {
-  const items = Array.isArray(list) ? list : [];
-  return PRIORITY_SPORTS
-    .filter((slug) => items.some((item) => (item.slug || item.sport || item) === slug))
-    .map((slug) => items.find((item) => (item.slug || item.sport || item) === slug));
 }
 
 export async function GET() {
@@ -46,14 +38,21 @@ export async function GET() {
   }
 
   try {
-    // Busca /sports uma vez (cache de 1h).
-    const available = await getMatches({ date: today, status: "scheduled", sport: "football", maxAgeMs: 5 * 60 * 1000 });
-    const availableSports = available.sports || [];
-    const selected = normalizeSports(availableSports);
-    const sportsToQuery = selected.length ? selected : [{ slug: "football", sport: "football" }];
+    // Descobre as modalidades do plano sem fazer uma chamada /games extra.
+    const available = await getAvailableSports();
+    const allSports = available.sports || [];
+    const selected = PRIORITY_SPORTS
+      .map((slug) => allSports.find((item) => (item.slug || item.sport || item) === slug))
+      .filter(Boolean);
 
-    // Para evitar 429, fazemos a consulta do placar prioritariamente em futebol.
-    // Os demais esportes entram de forma controlada, com cache de 5 minutos.
+    // Se o plano devolver alguma modalidade diferente das prioritárias,
+    // ela também entra depois, mas limitamos o lote para proteger a API.
+    const sportsToQuery = selected.length
+      ? selected
+      : [{ slug: "football", sport: "football", label: "Futebol" }];
+
+    // Uma consulta por esporte para os jogos de hoje.
+    // Cacheia futebol por 60s e os demais por 5 minutos.
     const todayResults = await Promise.all(
       sportsToQuery.map((item) => {
         const sport = item.slug || item.sport || item;
@@ -66,7 +65,7 @@ export async function GET() {
       })
     );
 
-    // Ontem: apenas futebol nesta rota principal. Isso garante resultados úteis sem multiplicar requisições.
+    // Resultados de ontem: somente futebol na página principal.
     const yesterdayFootball = await getMatches({
       sport: "football",
       date: yesterday,
@@ -74,8 +73,9 @@ export async function GET() {
       maxAgeMs: 10 * 60 * 1000
     });
 
-    const live = todayResults.flatMap((r) => r.matches).filter((game) => game.status === "live");
-    const scheduled = todayResults.flatMap((r) => r.matches).filter((game) => game.status === "scheduled");
+    const allToday = todayResults.flatMap((r) => r.matches);
+    const live = allToday.filter((game) => game.status === "live");
+    const scheduled = allToday.filter((game) => game.status === "scheduled");
 
     const errors = [
       ...available.errors,
@@ -88,7 +88,7 @@ export async function GET() {
       today,
       yesterday,
       configured: true,
-      sports: availableSports,
+      sports: allSports,
       live,
       scheduled,
       yesterdayResults: yesterdayFootball.matches,
