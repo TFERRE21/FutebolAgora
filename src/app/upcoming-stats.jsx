@@ -22,13 +22,13 @@ function TeamStat({ team, stats }) {
   </div>;
 }
 
-export default function UpcomingStats({ games = [] }) {
+export default function UpcomingStats({ games = [], sport = "football" }) {
   const ids = useMemo(() => games.filter((g) => g?.id).slice(0, 3).map((g) => g.id), [games]);
   const [data, setData] = useState(null);
 
   useEffect(() => {
     if (!ids.length) return;
-    fetch("/api/upcoming-stats?ids=" + encodeURIComponent(ids.join(",")), { cache: "no-store" })
+    fetch("/api/upcoming-stats?sport=" + encodeURIComponent(sport) + "&ids=" + encodeURIComponent(ids.join(",")), { cache: "no-store" })
       .then((r) => r.json())
       .then(setData)
       .catch(() => setData({ matches: [] }));
