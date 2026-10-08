@@ -8,7 +8,7 @@ export function isOpenAIConfigured() {
   return Boolean(client);
 }
 
-export async function generateSportsNews({ topic = "futebol brasileiro", count = 6 } = {}) {
+async function generateSportsNewsLegacy({ topic = "futebol brasileiro", count = 6 } = {}) {
   if (!client) throw new Error("OPENAI_API_KEY não configurada.");
 
   const model = process.env.OPENAI_MODEL || "gpt-5.6";
@@ -63,6 +63,92 @@ export async function generateSportsNews({ topic = "futebol brasileiro", count =
     generatedAt: new Date().toISOString(),
     articles: Array.isArray(parsed) ? parsed : (parsed.articles || [])
   };
+}
+
+
+const articleCache = new Map();
+const ARTICLE_CACHE_MS = 20 * 60 * 1000;
+
+function slugifyNews(value = "") {
+  return String(value).normalize("NFD").replaceAll("\u0300","").toLowerCase()
+    .replaceAll(" ","-").replace(/[^a-z0-9-]/g,"").replace(/-+/g,"-").slice(0,90) || "noticia-esportiva";
+}
+
+function normalizeNewsArticle(x = {}, index = 0) {
+  return {
+    slug: x.slug || slugifyNews(x.title) + (index ? "-" + index : ""),
+    title: x.title || "Notícia esportiva",
+    summary: x.summary || x.lead || "",
+    body: x.body || "",
+    category: x.category || "Esportes",
+    publishedAt: x.publishedAt || new Date().toISOString(),
+    updatedAt: x.updatedAt || new Date().toISOString(),
+    competition: x.competition || "",
+    round: x.round || "",
+    venue: x.venue || "",
+    match: x.match || null,
+    teams: Array.isArray(x.teams) ? x.teams.slice(0,6) : [],
+    players: Array.isArray(x.players) ? x.players.slice(0,10) : [],
+    keyFacts: Array.isArray(x.keyFacts) ? x.keyFacts.slice(0,6) : [],
+    stats: Array.isArray(x.stats) ? x.stats.slice(0,8) : [],
+    tags: Array.isArray(x.tags) ? x.tags.slice(0,10) : [],
+    sources: Array.isArray(x.sources) ? x.sources.slice(0,6) : [],
+    imagePrompt: x.imagePrompt || "",
+    imageSearchQuery: x.imageSearchQuery || ""
+  };
+}
+
+export function getCachedArticleBySlug(slug) {
+  const item = articleCache.get(slug);
+  if (!item) return null;
+  if (Date.now() - item.createdAt > ARTICLE_CACHE_MS) {
+    articleCache.delete(slug);
+    return null;
+  }
+  return item.article;
+}
+
+export async function generateSportsNews({ topic = "futebol brasileiro", count = 6, context = null, force = false } = {}) {
+  if (!client) throw new Error("OPENAI_API_KEY não configurada.");
+  const safeCount = Math.min(Math.max(Number(count) || 6, 1), 10);
+  const key = topic + "|" + safeCount + "|" + JSON.stringify(context || {}).slice(0, 12000);
+  const cached = articleCache.get("__batch__" + key);
+  if (!force && cached && Date.now() - cached.createdAt < ARTICLE_CACHE_MS) return cached.result;
+
+  const model = process.env.OPENAI_MODEL || "gpt-5.6";
+  const response = await client.responses.create({
+    model,
+    tools: [{ type: "web_search" }],
+    input: [
+      { role: "system", content: [{ type: "input_text", text: [
+        "Você é o editor-chefe do FutebolAgora.",
+        "Pesquise fatos atuais e confiáveis. Escreva jornalismo original.",
+        "Nunca invente placares, classificação, escalações, lesões, suspensões, datas, horários ou estatísticas.",
+        "Use o contexto estruturado como fonte prioritária para dados de jogos.",
+        "Enriqueça as matérias com times, jogadores, competição, rodada, estádio, tabela, forma recente e números confirmados.",
+        "Responda somente JSON válido no formato {articles:[...]}.",
+        "Campos: slug,title,summary,body,category,publishedAt,updatedAt,competition,round,venue,match,teams,players,keyFacts,stats,tags,sources,imagePrompt,imageSearchQuery.",
+        "Não invente URLs de imagens. sources deve conter URLs reais consultadas."
+      ].join("\n") }] },
+      { role: "user", content: [{ type: "input_text", text:
+        "Tema: " + topic + "\nQuantidade: " + safeCount +
+        "\nContexto estruturado:\n" + JSON.stringify(context || { matches: [] }) +
+        "\nPriorize fatos das últimas 24 horas e jogos de hoje/amanhã."
+      }] }
+    ]
+  });
+
+  const clean = (response.output_text || "").trim();
+  let parsed;
+  try { parsed = JSON.parse(clean); }
+  catch { throw new Error("OpenAI retornou conteúdo que não pôde ser convertido em JSON."); }
+
+  const raw = Array.isArray(parsed) ? parsed : (parsed.articles || []);
+  const articles = raw.map(normalizeNewsArticle);
+  articles.forEach(article => articleCache.set(article.slug, { createdAt: Date.now(), article }));
+  const result = { model, generatedAt: new Date().toISOString(), articles };
+  articleCache.set("__batch__" + key, { createdAt: Date.now(), result });
+  return result;
 }
 
 export async function generateBrasileiraoClassification() {
