@@ -33,7 +33,7 @@ function dateBR(days = 0) {
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
-let serverClassificationCache = { expiresAt: 0, value: null };
+const serverClassificationCache = new Map();
 
 async function loadInitialData(section, view, filter) {
   const configured = Boolean(process.env.SPORTS_API_KEY);
@@ -72,8 +72,9 @@ async function loadInitialData(section, view, filter) {
     };
 
     if (view === "classification") {
-      const cached = serverClassificationCache;
-      if (cached.value && Date.now() < cached.expiresAt) return cached.value;
+      const classificationKey = (filter.competition || "Serie A") + "|" + (filter.region || "Brasil");
+      const cached = serverClassificationCache.get(classificationKey);
+      if (cached && Date.now() < cached.expiresAt) return cached.value;
 
       const [todayResult, standingsResult] = await Promise.all([
         getFilteredMatches({
@@ -127,7 +128,7 @@ async function loadInitialData(section, view, filter) {
         standings,
         errors
       };
-      serverClassificationCache = { expiresAt: Date.now() + 5 * 60 * 1000, value };
+      serverClassificationCache.set(classificationKey, { expiresAt: Date.now() + 5 * 60 * 1000, value });
       return value;
     }
 
