@@ -11,16 +11,21 @@ export const dynamic = "force-dynamic";
 
 const fallbackCache = new Map();
 const inflight = new Map();
+let databaseUnavailableUntil = 0;
 
 export async function GET(request) {
   const section = map[new URL(request.url).searchParams.get("section") || "futebol"] || "futebol";
   try {
-    if (isDatabaseConfigured()) {
-      const data = await getSportsSnapshot(section, 26 * 60 * 60 * 1000);
-      if (data) {
-        return NextResponse.json({ configured: true, section, data, source: "database" }, {
-          headers: { "Cache-Control": "public, max-age=30, s-maxage=30" }
-        });
+    if (isDatabaseConfigured() && Date.now() >= databaseUnavailableUntil) {
+      try {
+        const data = await getSportsSnapshot(section, 26 * 60 * 60 * 1000);
+        if (data) {
+          return NextResponse.json({ configured: true, section, data, source: "database" }, {
+            headers: { "Cache-Control": "public, max-age=30, s-maxage=30" }
+          });
+        }
+      } catch (dbError) {
+        databaseUnavailableUntil = Date.now() + 30_000;
       }
     }
 
