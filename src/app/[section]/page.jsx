@@ -25,7 +25,6 @@ const filters = {
   esports: { sport: "esports" },
   noticias: {}
 };
-};
 
 export default async function SectionPage({ params }) {
   const { section } = await params;
