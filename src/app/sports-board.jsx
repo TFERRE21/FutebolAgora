@@ -50,7 +50,16 @@ function Standings({ rows }) {
 }
 
 export default function SportsBoard({ filter = {}, view = "overview", initialData = null }) {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(
+    initialData || {
+      configured: true,
+      live: [],
+      scheduled: [],
+      yesterdayResults: [],
+      standings: [],
+      errors: []
+    }
+  );
   async function load() {
     const controller = new AbortController();
     const timeoutMs = view === "classification" ? 12000 : 5000;
@@ -91,7 +100,7 @@ export default function SportsBoard({ filter = {}, view = "overview", initialDat
     return () => clearInterval(timer);
   }, [JSON.stringify(filter), view]);
 
-  if (!data) return <section className="score-columns"><div className="panel"><h3>⚡ Placar esportivo</h3><p>Carregando jogos e resultados...</p></div></section>;
+  if (!data) return null;
   if (!data.configured) return <section className="score-columns">
     <div className="panel"><h3>⚡ Jogos de hoje</h3><p>Conecte a SportsAPI no servidor para ativar placares, resultados e atualização automática.</p></div>
     <div className="panel"><h3>🕘 Resultados de ontem</h3><p>Assim que a chave estiver configurada, esta área será preenchida automaticamente.</p></div>
