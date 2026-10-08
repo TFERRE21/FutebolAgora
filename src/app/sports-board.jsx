@@ -49,8 +49,8 @@ function Standings({ rows }) {
   </table></div>;
 }
 
-export default function SportsBoard({ filter = {}, view = "overview" }) {
-  const [data, setData] = useState(null);
+export default function SportsBoard({ filter = {}, view = "overview", initialData = null }) {
+  const [data, setData] = useState(initialData);
   async function load() {
     const controller = new AbortController();
     const timeoutMs = view === "classification" ? 12000 : 5000;
