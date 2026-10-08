@@ -92,6 +92,10 @@ export async function GET() {
       live,
       scheduled,
       yesterdayResults: yesterdayFootball.matches,
+      brasileiraoResults: yesterdayFootball.matches.filter((game) => {
+        const league = String(game.league?.name || "").toLowerCase();
+        return league.includes("brasileir") || league.includes("brazilian serie a") || league.includes("serie a brazil");
+      }),
       errors
     };
 
