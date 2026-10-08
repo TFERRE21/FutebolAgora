@@ -99,7 +99,8 @@ export default function SportsBoard({ filter = {}, view = "overview" }) {
 
   if (view === "upcoming") return <><section className="score-columns"><div className="panel"><div className="score-head"><h3>📅 Próximos jogos</h3><span>{data.scheduled.length} jogos</span></div>{data.scheduled.length ? data.scheduled.map((g) => <Match key={g.id} game={g} />) : <p className="empty-score">Nenhum jogo agendado para hoje.</p>}</div></section><UpcomingStats games={data.scheduled} sport={filter.sport || "football"} /></>;
 
-  return <section className="score-columns">
+  return <>
+    <section className="score-columns">
     {data.errors?.length > 0 && (
       <div className="panel api-warning" style={{ gridColumn: "1 / -1" }}>
         <h3>⚠️ SportsAPI</h3>
@@ -126,5 +127,7 @@ export default function SportsBoard({ filter = {}, view = "overview" }) {
       <div className="score-head"><h3>🕘 Resultados de ontem</h3><span>{data.yesterdayResults.length} jogos</span></div>
       {data.yesterdayResults.length ? data.yesterdayResults.slice(0, 12).map((g) => <Match key={g.id} game={g} />) : <p className="empty-score">Nenhum resultado encontrado.</p>}
     </div>
-  </section>;
+    </section>
+    <UpcomingStats games={data.scheduled} sport={filter.sport || "football"} />
+  </>;
 }
