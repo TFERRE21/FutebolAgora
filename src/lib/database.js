@@ -3,6 +3,7 @@ import pg from "pg";
 const { Pool } = pg;
 
 let pool;
+let dbFailureUntil = 0;
 
 function getPool() {
   if (!process.env.DATABASE_URL) return null;
@@ -25,7 +26,15 @@ export function isDatabaseConfigured() {
 export async function query(text, params = []) {
   const p = getPool();
   if (!p) throw new Error("DATABASE_URL não configurada.");
-  return p.query(text, params);
+  if (Date.now() < dbFailureUntil) throw new Error("Banco temporariamente indisponível; usando fonte esportiva de contingência.");
+  try {
+    const result = await p.query(text, params);
+    dbFailureUntil = 0;
+    return result;
+  } catch (error) {
+    dbFailureUntil = Date.now() + 30_000;
+    throw error;
+  }
 }
 
 export async function ensureDatabase() {
