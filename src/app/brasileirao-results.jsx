@@ -12,12 +12,12 @@ function MatchRow({ game }) {
       : "https://sportsapi.com.br" + (team.logo.startsWith("/") ? team.logo : "/" + team.logo);
   };
   return (
-    <div className="br-match-row">
+    <a className="br-match-row match-link" href={game?.id ? "/jogo/" + encodeURIComponent(game.id) : "#"} aria-label={"Abrir " + home + " x " + away}>
       <div className="br-team">{logo(game.homeTeam) && <img src={logo(game.homeTeam)} alt="" />}{home}</div>
       <strong>{game.homeScore ?? "-"} × {game.awayScore ?? "-"}</strong>
       <div className="br-team br-away">{away}{logo(game.awayTeam) && <img src={logo(game.awayTeam)} alt="" />}</div>
       <small>{game.league?.name || "Brasileirão"}</small>
-    </div>
+    </a>
   );
 }
 
