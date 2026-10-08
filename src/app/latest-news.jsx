@@ -19,7 +19,7 @@ export default function LatestNews(){
  const [loading,setLoading]=useState(true);
  useEffect(()=>{
   let active=true;
-  fetch("/api/ai/news?topic=futebol%20brasileiro&count=8",{cache:"no-store"})
+  fetch("/api/news-feed",{cache:"no-store"})
    .then(r=>r.json()).then(d=>{if(active&&Array.isArray(d.articles))setArticles(d.articles)})
    .catch(()=>{}).finally(()=>active&&setLoading(false));
   return()=>{active=false};
