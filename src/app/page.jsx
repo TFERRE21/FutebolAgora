@@ -1,40 +1,69 @@
-import { sports, featuredClubs } from "../config/sports";
+import { sports } from "../config/sports";
+
+const images = {
+  hero: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1400&q=85",
+  match: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=900&q=80",
+  stadium: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=900&q=80",
+  basketball: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=900&q=80",
+  volleyball: "https://images.unsplash.com/photo-1592656670411-0a3f8e0a5b9e?auto=format&fit=crop&w=900&q=80",
+  esports: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
+  baseball: "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=900&q=80"
+};
+
+const news = [
+  ["Futebol brasileiro", "A rodada que pode mexer de vez com a tabela do campeonato", images.hero],
+  ["Mercado da bola", "Clubes aceleram planejamento e movimentam bastidores", images.stadium],
+  ["Análise", "O que observar nos próximos jogos e onde estão os pontos decisivos", images.match],
+  ["Basquete", "NBB entra em fase decisiva com grandes confrontos", images.basketball],
+  ["Vôlei", "Superliga chega com rodada de alto nível", images.volleyball],
+  ["eSports", "Calendário competitivo ganha novos confrontos", images.esports]
+];
 
 export default function HomePage() {
   return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 20px", fontFamily: "Arial, sans-serif" }}>
-      <header style={{ marginBottom: 32 }}>
-        <p style={{ fontWeight: 700, letterSpacing: 1 }}>FUTEBOLAGORA</p>
-        <h1 style={{ fontSize: 42, margin: "8px 0" }}>O esporte acontecendo agora.</h1>
-        <p style={{ color: "#666", fontSize: 18 }}>
-          Notícias originais, jogos, resultados, classificações e informações esportivas em um só lugar.
-        </p>
+    <>
+      <header className="site-header">
+        <div className="header-top"><div className="header-top-inner"><span>QUINTA-FEIRA, 8 DE OUTUBRO</span><span>Últimas notícias · Resultados · Tabelas</span></div></div>
+        <div className="header-main">
+          <a className="brand" href="#"><b className="brand-mark">⚽</b><span>Futebol</span>Agora</a>
+          <div className="search">🔎 &nbsp; Buscar notícia, time ou campeonato</div>
+        </div>
+        <nav className="nav"><div className="nav-inner">
+          <a className="active" href="#">Início</a><a href="#">Futebol</a><a href="#">Brasileirão</a><a href="#">Libertadores</a><a href="#">Feminino</a><a href="#">Vôlei</a><a href="#">Basquete</a><a href="#">Futsal</a><a href="#">eSports</a>
+        </div></nav>
       </header>
 
-      <section>
-        <h2>Modalidades</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-          {sports.map((sport) => (
-            <article key={sport.slug} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 18 }}>
-              <h3>{sport.name}</h3>
-              <p style={{ color: "#666" }}>{sport.groups.slice(0, 4).join(" · ")}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <div className="ticker"><div className="ticker-inner"><span className="live">AO VIVO</span><span className="ticker-text">Acompanhe resultados, notícias e os principais acontecimentos do mundo dos esportes.</span></div></div>
 
-      <section style={{ marginTop: 32 }}>
-        <h2>Clubes em destaque</h2>
-        <p>{featuredClubs.join(" · ")}</p>
-      </section>
+      <main className="container">
+        <section className="hero">
+          <article className="hero-card">
+            <img src={images.hero} alt="Futebol em destaque" />
+            <div className="hero-copy"><div className="kicker">Futebol • Destaque</div><h1 className="hero-title">O esporte acontecendo agora, em um só lugar.</h1><div className="hero-meta">Notícias • Jogos • Resultados • Tabelas • Análises</div></div>
+          </article>
+          <div className="side-news">
+            <article className="side-card"><img src={images.match} alt="Jogo de futebol" /><div className="side-copy"><div className="kicker">Jogos de hoje</div><h3>Veja os principais confrontos e horários</h3><p>Agenda completa e acompanhamento dos resultados.</p></div></article>
+            <article className="side-card"><img src={images.stadium} alt="Estádio" /><div className="side-copy"><div className="kicker">Brasileirão</div><h3>Tudo sobre a rodada e a classificação</h3><p>Confira a tabela e os destaques de cada partida.</p></div></article>
+          </div>
+        </section>
 
-      <section style={{ marginTop: 32 }}>
-        <h2>Automação editorial</h2>
-        <p>
-          O sistema coleta fatos, elimina duplicidades, valida informações e prepara conteúdo original.
-          A edição diária é programada para 00:00 no horário de Brasília.
-        </p>
-      </section>
-    </main>
+        <div className="section-title"><h2>Últimas notícias</h2><a href="#">VER TODAS →</a></div>
+        <section className="content-grid">
+          <div className="news-grid">{news.map(([kicker,title,img]) => <article className="news-card" key={title}><div className="news-image"><img src={img} alt="" /></div><div className="news-copy"><div className="kicker">{kicker}</div><h3>{title}</h3><p>Informação objetiva, contexto e atualização em linguagem própria do FutebolAgora.</p></div></article>)}</div>
+          <aside className="sidebar">
+            <div className="panel"><h3>⚡ Jogos em destaque</h3>
+              {[["Flamengo","Palmeiras","19:00"],["Corinthians","Santos","21:30"],["Brasil","Argentina","21:00"],["Minas","Sesi","20:00"]].map(([a,b,t]) => <div className="match" key={a+b}><span className="badge">{a.slice(0,2).toUpperCase()}</span><span>{a}<br/><small>{b}</small></span><span className="score">{t}</span></div>)}
+            </div>
+            <div className="panel"><h3>📊 Em alta</h3><p><b>1.</b> Brasileirão</p><p><b>2.</b> Mercado da bola</p><p><b>3.</b> Libertadores</p><p><b>4.</b> Seleção Brasileira</p>
+            </div>
+          </aside>
+        </section>
+
+        <div className="section-title"><h2>Todos os esportes</h2><a href="#">EXPLORAR →</a></div>
+        <section className="sports-strip">{sports.map((sport) => <a className="sport-pill" href="#" key={sport.slug}><strong>{sport.name}</strong><span>{sport.groups.slice(0,3).join(" · ")}</span></a>)}</section>
+      </main>
+
+      <footer className="footer"><div className="footer-inner"><div><b>FutebolAgora</b><br/><small>Informação esportiva, resultados e notícias em um só lugar.</small></div><small>© 2026 FutebolAgora</small></div></footer>
+    </>
   );
 }
