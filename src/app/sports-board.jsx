@@ -17,7 +17,7 @@ function Match({ game, live = false }) {
       : "https://sportsapi.com.br" + (team.logo.startsWith("/") ? team.logo : "/" + team.logo);
   };
   return (
-    <div className="live-match">
+    <a className="live-match match-link" href={game?.id ? "/jogo/" + encodeURIComponent(game.id) : "#"} aria-label={"Abrir " + home + " x " + away}>
       <div className="match-league">{game.league?.name || game.sport}</div>
       <div className="match-teams">
         <div>{logo(game.homeTeam) && <img src={logo(game.homeTeam)} alt="" />}{home}</div>
@@ -27,7 +27,7 @@ function Match({ game, live = false }) {
       <div className={live ? "match-status live-status" : "match-status"}>
         {live ? (game.gameTimeDisplay || "AO VIVO") : (game.status === "finished" ? "ENCERRADO" : fmtTime(game.startTime))}
       </div>
-    </div>
+    </a>
   );
 }
 
