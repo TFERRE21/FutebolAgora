@@ -37,45 +37,90 @@ async function getBrasileiraoMatches(competition, region, status, date, maxAgeMs
 }
 
 async function buildBrasileiraoClassification(competition, region) {
-  // A classificação do futebol vem no endpoint de detalhes de uma partida.
-  // /games/filter?hasStandings=true não garante standings para partidas de futebol.
+  const errors = [];
   const yesterday = dateBR(-1);
-  const candidates = [];
 
-  const queries = [
-    { competition, region, status: "finished", date: yesterday },
-    { competition: "Brasileirao", region, status: "finished", date: yesterday },
-    { competition, region, date: yesterday },
-    { competition: "Brasileirao", region, date: yesterday }
+  // Primeiro tentamos o filtro oficial com hasStandings=true, sem limitar a uma data.
+  // Isso permite que a SportsAPI escolha uma partida que carregue a classificação.
+  const sources = [
+    { competition: "Brasileirão Série A", region, hasStandings: true },
+    { competition: "Serie A", region, hasStandings: true },
+    { competition: "Brasileirao", region, hasStandings: true },
+    { q: "Brasileirao", region, hasStandings: true }
   ];
 
-  for (const query of queries) {
+  for (const source of sources) {
     const result = await getFilteredMatches({
       sport: "football",
-      ...query,
-      maxAgeMs: 10 * 60 * 1000
+      ...source,
+      maxAgeMs: 5 * 60 * 1000
     });
-    candidates.push(...(result.matches || []));
-  }
 
-  const uniqueMatches = [...new Map(candidates.map((match) => [match.id, match])).values()];
-  const errors = [];
+    errors.push(...(result.errors || []));
 
-  for (const match of uniqueMatches.slice(0, 5)) {
-    const details = await getMatchDetails(match.id, "football", 30 * 60 * 1000);
+    const matches = result.matches || [];
 
-    if (!details.ok) {
-      if (details.error) errors.push({
-        endpoint: `/games/${match.id}/details`,
-        status: details.status,
-        error: details.error
-      });
-      continue;
+    // Quando o próprio /games/filter trouxer standings, usamos diretamente.
+    for (const match of matches) {
+      const groups = Array.isArray(match?.standings) ? match.standings : [];
+      for (const group of groups) {
+        const rows = Array.isArray(group?.rows) ? group.rows : [];
+        if (rows.length) {
+          return {
+            standings: rows,
+            groupName: group.groupName || group.name || "Série A",
+            errors
+          };
+        }
+      }
     }
 
-    const standings = Array.isArray(details.data?.standings) ? details.data.standings : [];
+    // Caso a classificação não venha embutida, buscamos nos detalhes.
+    for (const match of matches.slice(0, 5)) {
+      const details = await getMatchDetails(match.id, "football", 30 * 60 * 1000);
 
-    for (const group of standings) {
+      if (!details.ok) {
+        if (details.error) {
+          errors.push({
+            endpoint: `/games/${match.id}/details`,
+            status: details.status,
+            error: details.error
+          });
+        }
+        continue;
+      }
+
+      const groups = Array.isArray(details.data?.standings) ? details.data.standings : [];
+      for (const group of groups) {
+        const rows = Array.isArray(group?.rows) ? group.rows : [];
+        if (rows.length) {
+          return {
+            standings: rows,
+            groupName: group.groupName || group.name || "Série A",
+            errors
+          };
+        }
+      }
+    }
+  }
+
+  // Último recurso: procurar partidas finalizadas de ontem e consultar detalhes.
+  const yesterdayData = await getFilteredMatches({
+    sport: "football",
+    date: yesterday,
+    status: "finished",
+    competition: "Serie A",
+    region,
+    maxAgeMs: 10 * 60 * 1000
+  });
+
+  errors.push(...(yesterdayData.errors || []));
+
+  for (const match of (yesterdayData.matches || []).slice(0, 5)) {
+    const details = await getMatchDetails(match.id, "football", 30 * 60 * 1000);
+    const groups = Array.isArray(details.data?.standings) ? details.data.standings : [];
+
+    for (const group of groups) {
       const rows = Array.isArray(group?.rows) ? group.rows : [];
       if (rows.length) {
         return {
@@ -92,7 +137,10 @@ async function buildBrasileiraoClassification(competition, region) {
     groupName: "Série A",
     errors: errors.length
       ? errors
-      : [{ endpoint: "/games/:id/details", error: "Nenhuma classificação foi disponibilizada pela SportsAPI nas partidas consultadas." }]
+      : [{
+          endpoint: "/games/filter",
+          error: "A SportsAPI não retornou standings para nenhuma partida consultada."
+        }]
   };
 }
 
