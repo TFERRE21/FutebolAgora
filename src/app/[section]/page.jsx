@@ -14,6 +14,19 @@ const sections = {
   noticias: { title: "Últimas notícias", intro: "Notícias e análises esportivas do FutebolAgora.", groups: [] }
 };
 
+const filters = {
+  futebol: { sport: "football" },
+  brasileirao: { sport: "football", competition: "Serie A", region: "Brasil" },
+  libertadores: { sport: "football", competition: "Libertadores" },
+  feminino: { sport: "football", competition: "Feminino", region: "Brasil" },
+  volei: { sport: "volleyball" },
+  basquete: { sport: "basketball" },
+  futsal: { sport: "futsal" },
+  esports: { sport: "esports" },
+  noticias: {}
+};
+};
+
 export default async function SectionPage({ params }) {
   const { section } = await params;
   const page = sections[section] || sections.futebol;
@@ -38,7 +51,7 @@ export default async function SectionPage({ params }) {
             {page.groups.map((group) => <span key={group}>{group}</span>)}
           </div>
         </section>
-        <SportsBoard />
+        <SportsBoard filter={filters[section] || {}} />
         <div className="section-title"><h2>Principais páginas</h2></div>
         <section className="sports-strip">
           <Link className="sport-pill" href="/brasileirao"><strong>Brasileirão</strong><span>Resultados e classificação</span></Link>
