@@ -73,7 +73,14 @@ function timeLabel(game) {
 }
 
 export default function FeaturedMatch({ filter = {}, initialData = null }) {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(
+    initialData || {
+      configured: true,
+      live: [],
+      scheduled: [],
+      yesterdayResults: []
+    }
+  );
   const [error, setError] = useState("");
   const [realImage, setRealImage] = useState("");
 
