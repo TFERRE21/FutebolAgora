@@ -74,18 +74,30 @@ function timeLabel(game) {
 
 export default function FeaturedMatch({ filter = {} }) {
   const [data, setData] = useState(null);
+  const [error, setError] = useState("");
   const [realImage, setRealImage] = useState("");
 
   useEffect(() => {
     const load = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6500);
       try {
         const query = new URLSearchParams(filter).toString();
         const section = filter.competition === "Serie A" ? "brasileirao" : filter.competition === "Libertadores" ? "libertadores" : filter.sport === "volleyball" ? "volei" : filter.sport === "basketball" ? "basquete" : filter.sport === "futsal" ? "futsal" : filter.sport === "esports" ? "esports" : "futebol";
-        const response = await fetch("/api/sports-db?section=" + section, { cache: "no-store" });
+        const response = await fetch("/api/sports-db?section=" + section, { cache: "no-store", signal: controller.signal });
         const json = await response.json();
-        setData(json?.data || null);
-      } catch {
+        if (json?.data) {
+          setData(json.data);
+          setError(json?.error || "");
+        } else {
+          setData({ live: [], scheduled: [], yesterdayResults: [] });
+          setError(json?.error || "Não foi possível carregar os jogos agora.");
+        }
+      } catch (e) {
         setData({ live: [], scheduled: [], yesterdayResults: [] });
+        setError(e?.name === "AbortError" ? "A fonte esportiva demorou para responder." : "Não foi possível carregar os jogos agora.");
+      } finally {
+        clearTimeout(timeout);
       }
     };
     load();
@@ -125,7 +137,7 @@ export default function FeaturedMatch({ filter = {} }) {
         <div className="featured-empty-copy">
           <span>FUTEBOLAGORA • DESTAQUE</span>
           <h1>O principal jogo do futebol aparece aqui automaticamente.</h1>
-          <p>Assim que a agenda for atualizada, o confronto de maior destaque será carregado nesta área.</p>
+          <p>{error || "Assim que a agenda for atualizada, o confronto de maior destaque será carregado nesta área."}</p>
         </div>
       </section>
     );
