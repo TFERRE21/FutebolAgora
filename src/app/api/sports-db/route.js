@@ -9,6 +9,9 @@ const map = {
 
 export const dynamic = "force-dynamic";
 
+const fallbackCache = new Map();
+const inflight = new Map();
+
 export async function GET(request) {
   const section = map[new URL(request.url).searchParams.get("section") || "futebol"] || "futebol";
   try {
@@ -21,6 +24,21 @@ export async function GET(request) {
       }
     }
 
+    const cached = fallbackCache.get(section);
+    if (cached && Date.now() - cached.at < 30 * 1000) {
+      return NextResponse.json(cached.response, {
+        headers: { "Cache-Control": "public, max-age=30, s-maxage=30" }
+      });
+    }
+
+    if (inflight.has(section)) {
+      const shared = await inflight.get(section);
+      return NextResponse.json(shared, {
+        headers: { "Cache-Control": "public, max-age=30, s-maxage=30" }
+      });
+    }
+
+    const loadFallback = (async () => {
     // Fallback rápido: se o snapshot diário ainda não existir, entrega os jogos atuais
     // diretamente da SportsAPI. O banco continua sendo a fonte principal quando preenchido.
     const sport = section === "volei" ? "volleyball"
@@ -54,15 +72,26 @@ export async function GET(request) {
       yesterdayResults: yesterdayResult.matches || []
     };
 
-    return NextResponse.json({
+    const response = {
       configured: Boolean(process.env.SPORTS_API_KEY),
       section,
       data,
       source: "sports-api-fallback",
       errors: [...(todayResult.errors || []), ...(yesterdayResult.errors || [])]
-    }, {
-      headers: { "Cache-Control": "public, max-age=30, s-maxage=30" }
-    });
+    };
+    fallbackCache.set(section, { at: Date.now(), response });
+    return response;
+    })();
+
+    inflight.set(section, loadFallback);
+    try {
+      const response = await loadFallback;
+      return NextResponse.json(response, {
+        headers: { "Cache-Control": "public, max-age=30, s-maxage=30" }
+      });
+    } finally {
+      inflight.delete(section);
+    }
   } catch (error) {
     return NextResponse.json({
       configured: Boolean(process.env.SPORTS_API_KEY),
