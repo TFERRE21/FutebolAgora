@@ -52,7 +52,8 @@ export default function SportsBoard({ filter = {}, view = "overview" }) {
   const [data, setData] = useState(null);
   async function load() {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeoutMs = view === "classification" ? 15000 : 8000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const query = new URLSearchParams({ ...filter, view }).toString();
       const response = await fetch("/api/sports" + (query ? "?" + query : ""), {
