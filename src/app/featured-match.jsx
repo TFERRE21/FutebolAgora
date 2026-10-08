@@ -80,9 +80,10 @@ export default function FeaturedMatch({ filter = {} }) {
     const load = async () => {
       try {
         const query = new URLSearchParams(filter).toString();
-        const response = await fetch("/api/sports" + (query ? "?" + query : ""), { cache: "no-store" });
+        const section = filter.competition === "Serie A" ? "brasileirao" : filter.competition === "Libertadores" ? "libertadores" : filter.sport === "volleyball" ? "volei" : filter.sport === "basketball" ? "basquete" : filter.sport === "futsal" ? "futsal" : filter.sport === "esports" ? "esports" : "futebol";
+        const response = await fetch("/api/sports-db?section=" + section, { cache: "no-store" });
         const json = await response.json();
-        setData(json);
+        setData(json?.data || null);
       } catch {
         setData({ live: [], scheduled: [], yesterdayResults: [] });
       }
