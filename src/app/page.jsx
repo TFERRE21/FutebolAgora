@@ -59,7 +59,6 @@ export default function HomePage() {
       <div className="section-title"><h2>Últimas notícias</h2><a href="/noticias">VER TODAS →</a></div>
       <LatestNews />
 
->
 
       <div className="section-title"><h2>Todos os esportes</h2><a href="/futebol">EXPLORAR →</a></div>
       <section className="sports-strip">{sports.map((sport) => <a className="sport-pill" href={"/" + sport.slug} key={sport.slug}><strong>{sport.name}</strong><span>{sport.groups.slice(0,3).join(" · ")}</span></a>)}</section>
