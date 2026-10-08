@@ -51,11 +51,32 @@ function Standings({ rows }) {
 export default function SportsBoard({ filter = {}, view = "overview" }) {
   const [data, setData] = useState(null);
   async function load() {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     try {
       const query = new URLSearchParams({ ...filter, view }).toString();
-      const response = await fetch("/api/sports" + (query ? "?" + query : ""), { cache: "no-store" });
-      setData(await response.json());
-    } catch {}
+      const response = await fetch("/api/sports" + (query ? "?" + query : ""), {
+        cache: "no-store",
+        signal: controller.signal
+      });
+      const json = await response.json();
+      setData(json);
+    } catch (error) {
+      setData({
+        configured: true,
+        live: [],
+        scheduled: [],
+        yesterdayResults: [],
+        standings: [],
+        errors: [{
+          error: error?.name === "AbortError"
+            ? "A consulta demorou mais de 8 segundos. Tente novamente."
+            : "Não foi possível carregar os dados esportivos."
+        }]
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
   }
   useEffect(() => {
     load();
