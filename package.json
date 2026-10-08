@@ -1,13 +1,14 @@
 {
   "name": "futebolagora",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "Portal automatizado de esportes com notícias, jogos e conteúdo original.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
-    "news:daily": "node scripts/daily-news.mjs"
+    "start": "next dev -H 0.0.0.0 -p ${PORT:-3000}",
+    "news:daily": "node scripts/daily-news.mjs",
+    "prestart": "node -e \"console.log('[Arena Agora] prestart: build desativado no runtime')\""
   },
   "dependencies": {
     "next": "latest",
