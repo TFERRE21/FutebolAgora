@@ -24,10 +24,10 @@ function MatchRow({ game }) {
 export default function BrasileiraoResults() {
   const [data, setData] = useState(null);
   useEffect(() => {
-    fetch("/api/sports?sport=football&competition=Serie%20A&region=Brasil", { cache: "no-store" }).then((r) => r.json()).then(setData).catch(() => {});
+    fetch("/api/sports-db?section=brasileirao", { cache: "no-store" }).then((r) => r.json()).then(setData).catch(() => {});
   }, []);
 
-  const games = data?.brasileiraoResults || [];
+  const games = data?.data?.yesterdayResults || data?.brasileiraoResults || [];
   return (
     <div className="brasileirao-results">
       {games.length ? games.map((game) => <MatchRow key={game.id} game={game} />) : (
