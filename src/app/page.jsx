@@ -2,29 +2,13 @@ import { sports } from "../config/sports";
 import SportsBoard from "./sports-board";
 import BrasileiraoResults from "./brasileirao-results";
 import LatestNews from "./latest-news";
-
-const images = {
-  hero: [
-    "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1400&q=85",
-    "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1400&q=85",
-    "https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=1400&q=85"
-  ],
-  match: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=900&q=80",
-  stadium: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=900&q=80",
-  basketball: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=900&q=80",
-  volleyball: "https://images.unsplash.com/photo-1592656670411-0a3f8e0a5b9e?auto=format&fit=crop&w=900&q=80",
-  esports: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80"
-};
-
-
+import FeaturedMatch from "./featured-match";
 
 function brDate() {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "full" }).format(new Date());
 }
 
 export default function HomePage() {
-  const hero = images.hero[new Date().getDate() % images.hero.length];
-
   return <>
     <header className="site-header">
       <div className="header-top"><div className="header-top-inner"><span>{brDate().toUpperCase()}</span><span>Últimas notícias · Resultados · Tabelas</span></div></div>
@@ -40,16 +24,7 @@ export default function HomePage() {
     <div className="ticker"><div className="ticker-inner"><span className="live">AO VIVO</span><span className="ticker-text">Placar, resultados e agenda atualizados automaticamente. Acompanhe o esporte em tempo real.</span></div></div>
 
     <main className="container">
-      <section className="hero">
-        <article className="hero-card">
-          <img src={hero} alt="Futebol em destaque" />
-          <div className="hero-copy"><div className="kicker">FutebolAgora • Destaque</div><h1 className="hero-title">O esporte acontecendo agora, em um só lugar.</h1><div className="hero-meta">Notícias • Jogos • Resultados • Tabelas • Análises</div></div>
-        </article>
-        <div className="side-news">
-          <a className="side-card" href="/noticia/rodada-brasileirao"><img src={images.match} alt="Jogo de futebol" /><div className="side-copy"><div className="kicker">Jogos de hoje</div><h3>Veja os principais confrontos e horários</h3><p>Agenda completa, placares e acompanhamento das partidas.</p></div></a>
-          <a className="side-card" href="/noticia/analise-da-rodada"><img src={images.stadium} alt="Estádio" /><div className="side-copy"><div className="kicker">Brasileirão</div><h3>Tudo sobre a rodada e a classificação</h3><p>Contexto, resultados e os impactos de cada partida.</p></div></a>
-        </div>
-      </section>
+      <FeaturedMatch />
 
       <SportsBoard />
 
