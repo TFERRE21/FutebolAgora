@@ -140,6 +140,7 @@ export async function getFilteredMatches({
   region,
   team,
   hasStandings,
+  q,
   maxAgeMs = 60_000
 }) {
   const params = new URLSearchParams({ sport, limit: "100", offset: "0" });
@@ -149,6 +150,7 @@ export async function getFilteredMatches({
   if (competition) params.set("competition", competition);
   if (region) params.set("region", region);
   if (team) params.set("team", team);
+  if (q) params.set("q", q);
   if (hasStandings !== undefined) params.set("hasStandings", String(hasStandings));
 
   const key = "filter|" + params.toString();
