@@ -37,42 +37,63 @@ async function getBrasileiraoMatches(competition, region, status, date, maxAgeMs
 }
 
 async function buildBrasileiraoClassification(competition, region) {
-  const first = await getFilteredMatches({
-    sport: "football",
-    competition,
-    region,
-    hasStandings: true,
-    maxAgeMs: 5 * 60 * 1000
-  });
+  // A classificação do futebol vem no endpoint de detalhes de uma partida.
+  // /games/filter?hasStandings=true não garante standings para partidas de futebol.
+  const yesterday = dateBR(-1);
+  const candidates = [];
 
-  const errors = [...(first.errors || [])];
-  let matches = first.matches || [];
+  const queries = [
+    { competition, region, status: "finished", date: yesterday },
+    { competition: "Brasileirao", region, status: "finished", date: yesterday },
+    { competition, region, date: yesterday },
+    { competition: "Brasileirao", region, date: yesterday }
+  ];
 
-  if (!matches.length && competition === "Serie A") {
-    const fallback = await getFilteredMatches({
+  for (const query of queries) {
+    const result = await getFilteredMatches({
       sport: "football",
-      competition: "Brasileirao",
-      region,
-      hasStandings: true,
-      maxAgeMs: 5 * 60 * 1000
+      ...query,
+      maxAgeMs: 10 * 60 * 1000
     });
-    matches = fallback.matches || [];
-    errors.push(...(fallback.errors || []));
+    candidates.push(...(result.matches || []));
   }
 
-  for (const match of matches) {
-    const standings = Array.isArray(match?.standings) ? match.standings : [];
-    const rows = standings.flatMap((group) => Array.isArray(group?.rows) ? group.rows : []);
-    if (rows.length) {
-      return {
-        standings: rows,
-        groupName: standings[0]?.groupName || "Série A",
-        errors
-      };
+  const uniqueMatches = [...new Map(candidates.map((match) => [match.id, match])).values()];
+  const errors = [];
+
+  for (const match of uniqueMatches.slice(0, 5)) {
+    const details = await getMatchDetails(match.id, "football", 30 * 60 * 1000);
+
+    if (!details.ok) {
+      if (details.error) errors.push({
+        endpoint: `/games/${match.id}/details`,
+        status: details.status,
+        error: details.error
+      });
+      continue;
+    }
+
+    const standings = Array.isArray(details.data?.standings) ? details.data.standings : [];
+
+    for (const group of standings) {
+      const rows = Array.isArray(group?.rows) ? group.rows : [];
+      if (rows.length) {
+        return {
+          standings: rows,
+          groupName: group.groupName || group.name || "Série A",
+          errors
+        };
+      }
     }
   }
 
-  return { standings: [], groupName: "Série A", errors };
+  return {
+    standings: [],
+    groupName: "Série A",
+    errors: errors.length
+      ? errors
+      : [{ endpoint: "/games/:id/details", error: "Nenhuma classificação foi disponibilizada pela SportsAPI nas partidas consultadas." }]
+  };
 }
 
 export async function GET(request) {
