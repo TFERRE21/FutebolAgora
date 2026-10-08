@@ -134,3 +134,33 @@ export async function getMatches({ date, status, statusIn, sport, maxAgeMs = 60_
   gamesCache.set(key, { createdAt: now, value });
   return value;
 }
+
+export async function getFilteredMatches({ date, status, statusIn, sport = "football", competition, region, team, maxAgeMs = 60_000 }) {
+  const params = new URLSearchParams({ sport, limit: "100", offset: "0" });
+  if (date) params.set("date", date);
+  if (status) params.set("status", status);
+  if (statusIn) params.set("statusIn", statusIn);
+  if (competition) params.set("competition", competition);
+  if (region) params.set("region", region);
+  if (team) params.set("team", team);
+
+  const key = "filter|" + params.toString();
+  const cached = gamesCache.get(key);
+  const now = Date.now();
+  if (cached && now - cached.createdAt < maxAgeMs) return cached.value;
+
+  const result = await request("/games/filter?" + params.toString());
+  const value = {
+    matches: Array.isArray(result.data?.matches) ? result.data.matches : [],
+    configured: Boolean(API_KEY),
+    sports: [{ slug: sport, sport }],
+    errors: result.ok ? [] : [{
+      sport,
+      status: result.status || null,
+      retryAfter: result.retryAfter || null,
+      error: result.error
+    }]
+  };
+  gamesCache.set(key, { createdAt: now, value });
+  return value;
+}
