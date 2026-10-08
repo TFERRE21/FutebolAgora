@@ -9,7 +9,7 @@ async function request(path) {
   if (!API_KEY) return { ok: false, configured: false, data: {}, error: "SPORTS_API_KEY ausente" };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), 7000);
 
   try {
     let response = await fetch(BASE_URL + path, {
@@ -19,12 +19,13 @@ async function request(path) {
     });
 
     if (response.status === 502) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      response = await fetch(BASE_URL + path, {
-        headers: { "X-API-Key": API_KEY, Accept: "application/json" },
-        cache: "no-store",
-        signal: controller.signal
-      });
+      return {
+        ok: false,
+        configured: true,
+        status: 502,
+        data: {},
+        error: "SportsAPI retornou 502. A consulta será refeita automaticamente no próximo ciclo."
+      };
     }
 
     const raw = await response.text();
@@ -99,7 +100,7 @@ export async function getMatches({ date, status, statusIn, sport, maxAgeMs = 60_
   const results = await Promise.all(
     sports.map(async (item) => {
       const slug = item.slug || item.sport || item;
-      const params = new URLSearchParams({ limit: "100", offset: "0" });
+      const params = new URLSearchParams({ limit: "50", offset: "0" });
       if (status) params.set("status", status);
       if (statusIn) params.set("statusIn", statusIn);
       if (date) params.set("date", date);
@@ -155,7 +156,7 @@ export async function getFilteredMatches({
   q,
   maxAgeMs = 60_000
 }) {
-  const params = new URLSearchParams({ sport, limit: "100", offset: "0" });
+  const params = new URLSearchParams({ sport, limit: "50", offset: "0" });
   if (date) params.set("date", date);
   if (status) params.set("status", status);
   if (statusIn) params.set("statusIn", statusIn);
