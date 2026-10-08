@@ -9,10 +9,20 @@ async function request(path) {
   if (!API_KEY) return { ok: false, configured: false, data: {}, error: "SPORTS_API_KEY ausente" };
 
   try {
-    const response = await fetch(BASE_URL + path, {
+    let response = await fetch(BASE_URL + path, {
       headers: { "X-API-Key": API_KEY, Accept: "application/json" },
       cache: "no-store"
     });
+
+    // 502 é falha transitória do upstream. Fazemos apenas uma nova tentativa
+    // para evitar transformar uma instabilidade momentânea em erro visível.
+    if (response.status === 502) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      response = await fetch(BASE_URL + path, {
+        headers: { "X-API-Key": API_KEY, Accept: "application/json" },
+        cache: "no-store"
+      });
+    }
     const raw = await response.text();
     let data = {};
     try { data = raw ? JSON.parse(raw) : {}; } catch { data = { raw }; }
