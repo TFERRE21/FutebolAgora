@@ -59,7 +59,9 @@ export default function SportsBoard({ filter = {}, view = "overview", initialDat
       const effectiveFilter = Object.keys(filter).length ? filter : { sport: "football" };
       const query = new URLSearchParams({ ...effectiveFilter, view }).toString();
       const section = filter.competition === "Serie A" ? "brasileirao" : filter.competition === "Libertadores" ? "libertadores" : filter.sport === "volleyball" ? "volei" : filter.sport === "basketball" ? "basquete" : filter.sport === "futsal" ? "futsal" : filter.sport === "esports" ? "esports" : "futebol";
-      const endpoint = view === "classification" ? "/api/sports" + (query ? "?" + query : "") : "/api/sports-db?section=" + section;
+      const endpoint = (view === "classification" || Object.keys(filter).length)
+        ? "/api/sports" + (query ? "?" + query : "")
+        : "/api/sports-db?section=" + section;
       const response = await fetch(endpoint, {
         cache: "no-store",
         signal: controller.signal
