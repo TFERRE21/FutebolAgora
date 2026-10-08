@@ -9,7 +9,7 @@ async function request(path) {
   if (!API_KEY) return { ok: false, configured: false, data: {}, error: "SPORTS_API_KEY ausente" };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 7000);
+  const timeout = setTimeout(() => controller.abort(), 3500);
 
   try {
     let response = await fetch(BASE_URL + path, {
