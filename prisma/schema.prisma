@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Sport {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  name         String
+  competitions Competition[]
+  teams        Team[]
+  articles     Article[]
+  createdAt    DateTime      @default(now())
+}
+
+model Competition {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  sportId   String
+  sport     Sport    @relation(fields: [sportId], references: [id])
+  fixtures  Fixture[]
+  standings Standing[]
+}
+
+model Team {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  sportId   String
+  sport     Sport     @relation(fields: [sportId], references: [id])
+  homeGames Fixture[] @relation("homeTeam")
+  awayGames Fixture[] @relation("awayTeam")
+}
+
+model Fixture {
+  id            String      @id @default(cuid())
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  homeTeamId    String
+  awayTeamId    String
+  homeTeam      Team        @relation("homeTeam", fields: [homeTeamId], references: [id])
+  awayTeam      Team        @relation("awayTeam", fields: [awayTeamId], references: [id])
+  startsAt      DateTime
+  status        String
+  homeScore     Int?
+  awayScore     Int?
+  events        MatchEvent[]
+  updatedAt     DateTime    @updatedAt
+}
+
+model MatchEvent {
+  id        String   @id @default(cuid())
+  fixtureId String
+  fixture   Fixture  @relation(fields: [fixtureId], references: [id])
+  type      String
+  minute    Int?
+  team      String?
+  player    String?
+  payload   Json?
+}
+
+model Standing {
+  id            String      @id @default(cuid())
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  teamName      String
+  position      Int
+  points        Int?
+  played        Int?
+  wins          Int?
+  draws         Int?
+  losses        Int?
+  scored        Int?
+  conceded      Int?
+}
+
+model Source {
+  id        String        @id @default(cuid())
+  name      String
+  url       String        @unique
+  facts     Fact[]
+  createdAt DateTime      @default(now())
+}
+
+model Fact {
+  id            String   @id @default(cuid())
+  sourceId      String
+  source        Source   @relation(fields: [sourceId], references: [id])
+  canonicalKey  String
+  title         String
+  content       String?
+  confidence    Float
+  observedAt    DateTime
+  usedArticles  ArticleSource[]
+  createdAt     DateTime @default(now())
+}
+
+model Article {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  summary     String
+  body        String
+  status      String
+  sportId     String
+  sport       Sport           @relation(fields: [sportId], references: [id])
+  publishedAt DateTime?
+  updatedAt   DateTime        @updatedAt
+  sources     ArticleSource[]
+}
+
+model ArticleSource {
+  articleId String
+  factId    String
+  article   Article @relation(fields: [articleId], references: [id])
+  fact      Fact    @relation(fields: [factId], references: [id])
+  @@id([articleId, factId])
+}
