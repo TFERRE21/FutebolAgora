@@ -288,3 +288,82 @@ a { color: inherit; text-decoration: none; }
 @media(max-width:900px){.section-masthead-grid{grid-template-columns:1fr}.upcoming-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.section-masthead{padding:22px 18px}.section-feature-list{grid-template-columns:1fr 1fr}.upcoming-grid{grid-template-columns:1fr}.up-match-teams{padding-left:10px;padding-right:10px}}
 .up-h2h{margin:0 13px 10px;padding:8px 9px;background:#f7faf8;border-radius:7px;display:flex;justify-content:space-between;gap:8px;font-size:9px}.up-h2h span{color:var(--muted)}.up-h2h b{color:var(--green)}
+
+/* Identidade Arena Agora — portal esportivo premium */
+:root{--green:#075f39;--green-dark:#043c26;--lime:#c9f227;--ink:#101817;--muted:#68736e;--line:#e2e8e4;--soft:#f1f4f2;--paper:#fff}
+body{background:#f3f5f4}
+.site-header{box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.header-top{background:linear-gradient(90deg,#043b25,#075f39)}
+.header-main{height:82px}
+.brand{font-size:31px;letter-spacing:-1.8px;gap:10px}
+.brand-mark{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#087c49,#043f29);box-shadow:0 7px 18px rgba(4,60,38,.22);font-size:13px;letter-spacing:-1px}
+.brand-mark span{font-weight:950;color:#fff}
+.brand>span{color:#075f39}
+.brand{color:#111817}
+.search{box-shadow:0 3px 12px rgba(0,0,0,.04);border-radius:12px}
+.nav-inner{gap:29px}
+.nav a{padding:15px 1px;font-size:13px}
+.nav a.active{border-bottom:3px solid var(--lime)}
+.ticker{box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.live{border-radius:4px;padding:6px 10px}
+.container{padding-top:30px}
+.panel{border-radius:10px;box-shadow:0 4px 18px rgba(15,32,24,.035)}
+.section-title{margin-top:34px}
+.section-title h2{font-size:22px}
+.section-title:after{content:"";height:3px;width:34px;background:var(--lime);display:block;margin-left:12px}
+.section-title{justify-content:flex-start}
+.section-title>a{margin-left:auto}
+.sports-strip{gap:12px}
+.sport-pill{border-radius:9px;transition:.16s;border-top:3px solid transparent}
+.sport-pill:hover{border-top-color:var(--lime);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.06)}
+.footer{background:#06150f}
+.footer-inner{padding-top:34px;padding-bottom:34px}
+
+/* Hero sem dados: visual editorial em vez de bloco vazio */
+.empty-featured{position:relative;min-height:410px!important;overflow:hidden;background:radial-gradient(circle at 78% 35%,rgba(201,242,39,.18),transparent 23%),linear-gradient(125deg,#042d1e,#075f39 55%,#0a7a48)!important}
+.empty-featured:after{content:"";position:absolute;width:330px;height:330px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-70px;top:-90px;box-shadow:0 0 0 35px rgba(255,255,255,.025),0 0 0 70px rgba(255,255,255,.018)}
+.featured-empty-copy{position:relative;z-index:2;padding:44px 46px}
+.featured-empty-copy span{font-size:10px;letter-spacing:1.2px}
+.featured-empty-copy h1{font-size:clamp(34px,4.8vw,58px);max-width:760px}
+.featured-empty-copy p{font-size:14px}
+.featured-empty-copy:before{content:"AA";position:absolute;right:12%;bottom:-20px;font-size:210px;font-weight:950;line-height:1;color:rgba(255,255,255,.035);letter-spacing:-18px}
+
+/* Aviso técnico discreto */
+.api-warning{background:#fffdf5!important;border-color:#eee5bc!important}
+.api-warning h3{font-size:13px!important;margin-bottom:5px!important}
+.api-warning p{font-size:11px!important;color:#6b6250!important;margin:0!important}
+.api-warning ul{display:none!important}
+.api-warning:after{content:"Atualizando automaticamente…";display:block;color:#9a8d68;font-size:10px;margin-top:7px}
+
+/* Destaque principal mais editorial */
+.featured-match{border-radius:10px;box-shadow:0 16px 40px rgba(0,0,0,.13);margin-top:8px}
+.featured-match-main{min-height:455px}
+.featured-match-content{padding:31px 36px}
+.featured-match-kicker span{background:var(--green)}
+.featured-button{background:#fff;color:#0a3423;border:0}
+
+/* Masthead das modalidades */
+.section-masthead{border-radius:10px;padding:32px 36px;box-shadow:0 15px 35px rgba(4,85,47,.13)}
+.section-masthead h1{font-weight:900}
+.section-feature-list span{border-radius:6px;background:rgba(255,255,255,.08)}
+.section-intro{box-shadow:none}
+
+/* Cards de estatísticas */
+.upcoming-card{border-radius:10px;box-shadow:0 7px 24px rgba(10,30,20,.055);transition:transform .16s,box-shadow .16s}
+.upcoming-card:hover{transform:translateY(-3px);box-shadow:0 13px 30px rgba(10,30,20,.09)}
+.up-card-top{background:#f5f7f6}
+.up-card-link{font-size:10px}
+
+/* Mobile */
+@media(max-width:700px){
+ .header-top-inner span:last-child{display:none}
+ .header-main{height:70px}
+ .brand{font-size:25px}
+ .brand-mark{width:39px;height:39px}
+ .container{padding-top:18px}
+ .featured-match-main{min-height:410px}
+ .featured-match-content{padding:23px}
+ .featured-empty-copy{padding:30px 25px}
+ .featured-empty-copy h1{font-size:34px}
+ .section-masthead{padding:25px 22px}
+}
