@@ -7,7 +7,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --no-audit --no-fund
 
 COPY . .
 
