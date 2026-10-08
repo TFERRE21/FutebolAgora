@@ -182,6 +182,32 @@ export async function GET(request) {
       const sport = sportFilter || "football";
 
       if (sport === "football" && competition && region.toLowerCase().includes("brasil")) {
+        if (view === "classification") {
+          const classification = await buildBrasileiraoClassification(competition, region);
+          const payload = {
+            updatedAt: new Date().toISOString(),
+            today,
+            yesterday,
+            configured: true,
+            sports: [{ slug: "football", sport: "football" }],
+            live: [],
+            scheduled: [],
+            yesterdayResults: [],
+            brasileiraoResults: [],
+            standings: classification.standings,
+            view,
+            errors: classification.errors
+          };
+          responseCache = {
+            payload,
+            scope: cacheScope,
+            expiresAt: now + 5 * 60 * 1000
+          };
+          return NextResponse.json(payload, {
+            headers: { "Cache-Control": "no-store", "X-Sports-Cache": "MISS" }
+          });
+        }
+
         const [todayData, yesterdayData] = await Promise.all([
           getBrasileiraoMatches(competition, region, null, today, 60 * 1000),
           getBrasileiraoMatches(competition, region, "finished", yesterday, 10 * 60 * 1000)
@@ -190,12 +216,7 @@ export async function GET(request) {
         const allToday = todayData.matches || [];
         const errors = [...(todayData.errors || []), ...(yesterdayData.errors || [])];
 
-        let standings = [];
-        if (view === "classification") {
-          const classification = await buildBrasileiraoClassification(competition, region);
-          standings = classification.standings;
-          errors.push(...classification.errors);
-        }
+        const standings = [];
 
         const payload = {
           updatedAt: new Date().toISOString(),
