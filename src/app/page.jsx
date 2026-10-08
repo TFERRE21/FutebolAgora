@@ -38,7 +38,7 @@ export default function HomePage() {
         <div className="search">🔎 &nbsp; Buscar notícia, time ou campeonato</div>
       </div>
       <nav className="nav"><div className="nav-inner">
-        <a className="active" href="/">Início</a><a href="#">Futebol</a><a href="#">Brasileirão</a><a href="#">Libertadores</a><a href="#">Feminino</a><a href="#">Vôlei</a><a href="#">Basquete</a><a href="#">Futsal</a><a href="#">eSports</a>
+        <a className="active" href="/">Início</a><a href="/futebol">Futebol</a><a href="/brasileirao">Brasileirão</a><a href="/libertadores">Libertadores</a><a href="/feminino">Feminino</a><a href="/volei">Vôlei</a><a href="/basquete">Basquete</a><a href="/futsal">Futsal</a><a href="/esports">eSports</a>
       </div></nav>
     </header>
 
@@ -58,7 +58,10 @@ export default function HomePage() {
 
       <SportsBoard />
 
-      <div className="section-title"><h2>Últimas notícias</h2><a href="#">VER TODAS →</a></div>
+      <div className="section-title"><h2>Resultados do Brasileirão</h2><a href="/brasileirao">VER CAMPEONATO →</a></div>
+      <section className="panel"><div id="brasileirao-results"><p className="empty-score">Os resultados do Brasileirão são atualizados junto com o placar.</p></div></section>
+
+      <div className="section-title"><h2>Últimas notícias</h2><a href="/noticias">VER TODAS →</a></div>
       <section className="content-grid">
         <div className="news-grid">{news.map(([kicker,title,img,slug]) => <a className="news-card" href={"/noticia/" + slug} key={title}><div className="news-image"><img src={img} alt={title} /></div><div className="news-copy"><div className="kicker">{kicker}</div><h3>{title}</h3><p>Entenda o que aconteceu, por que importa e o que pode acontecer a seguir.</p></div></a>)}</div>
         <aside className="sidebar">
@@ -67,8 +70,8 @@ export default function HomePage() {
         </aside>
       </section>
 
-      <div className="section-title"><h2>Todos os esportes</h2><a href="#">EXPLORAR →</a></div>
-      <section className="sports-strip">{sports.map((sport) => <a className="sport-pill" href="#" key={sport.slug}><strong>{sport.name}</strong><span>{sport.groups.slice(0,3).join(" · ")}</span></a>)}</section>
+      <div className="section-title"><h2>Todos os esportes</h2><a href="/futebol">EXPLORAR →</a></div>
+      <section className="sports-strip">{sports.map((sport) => <a className="sport-pill" href={"/" + sport.slug} key={sport.slug}><strong>{sport.name}</strong><span>{sport.groups.slice(0,3).join(" · ")}</span></a>)}</section>
     </main>
 
     <footer className="footer"><div className="footer-inner"><div><b>FutebolAgora</b><br/><small>Informação esportiva, resultados e notícias em um só lugar.</small></div><small>© 2026 FutebolAgora</small></div></footer>
