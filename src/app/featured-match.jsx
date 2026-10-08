@@ -72,13 +72,15 @@ function timeLabel(game) {
   }).format(new Date(game.startTime));
 }
 
-export default function FeaturedMatch() {
+export default function FeaturedMatch({ filter = {} }) {
   const [data, setData] = useState(null);
+  const [realImage, setRealImage] = useState("");
 
   useEffect(() => {
     const load = async () => {
       try {
-        const response = await fetch("/api/sports?sport=football", { cache: "no-store" });
+        const query = new URLSearchParams(filter).toString();
+        const response = await fetch("/api/sports" + (query ? "?" + query : ""), { cache: "no-store" });
         const json = await response.json();
         setData(json);
       } catch {
@@ -89,6 +91,19 @@ export default function FeaturedMatch() {
     const timer = setInterval(load, 60000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (!data) return () => { active = false; };
+    const candidate = pickImportant([...(data.live || []), ...(data.scheduled || []), ...(data.yesterdayResults || [])]);
+    if (!candidate?.id) return () => { active = false; };
+    setRealImage("");
+    fetch("/api/match-image?id=" + encodeURIComponent(candidate.id), { cache: "no-store" })
+      .then((r) => r.json())
+      .then((json) => { if (active && json?.image) setRealImage(json.image); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [data]);
 
   const match = useMemo(() => {
     if (!data) return null;
@@ -119,7 +134,7 @@ export default function FeaturedMatch() {
   const awayLogo = teamLogo(match.awayTeam);
   const home = match.homeTeam?.name || "Mandante";
   const away = match.awayTeam?.name || "Visitante";
-  const image = matchImage(match, 0);
+  const image = realImage || matchImage(match, 0);
   const href = match.id ? "/jogo/" + encodeURIComponent(match.id) : "/futebol";
 
   return (
