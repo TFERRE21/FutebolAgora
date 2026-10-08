@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import UpcomingStats from "./upcoming-stats";
 
 function fmtTime(ms) {
   if (!ms) return "--:--";
@@ -96,7 +97,7 @@ export default function SportsBoard({ filter = {}, view = "overview" }) {
 
   if (view === "results") return <section className="score-columns"><div className="panel"><div className="score-head"><h3>🕘 Resultados do Brasileirão</h3><span>{data.yesterdayResults.length} jogos</span></div>{data.yesterdayResults.length ? data.yesterdayResults.map((g) => <Match key={g.id} game={g} />) : <p className="empty-score">Nenhum resultado encontrado para ontem.</p>}</div></section>;
 
-  if (view === "upcoming") return <section className="score-columns"><div className="panel"><div className="score-head"><h3>📅 Próximos jogos do Brasileirão</h3><span>{data.scheduled.length} jogos</span></div>{data.scheduled.length ? data.scheduled.map((g) => <Match key={g.id} game={g} />) : <p className="empty-score">Nenhum jogo agendado para hoje.</p>}</div></section>;
+  if (view === "upcoming") return <><section className="score-columns"><div className="panel"><div className="score-head"><h3>📅 Próximos jogos</h3><span>{data.scheduled.length} jogos</span></div>{data.scheduled.length ? data.scheduled.map((g) => <Match key={g.id} game={g} />) : <p className="empty-score">Nenhum jogo agendado para hoje.</p>}</div></section><UpcomingStats games={data.scheduled} sport={filter.sport || "football"} /></>;
 
   return <section className="score-columns">
     {data.errors?.length > 0 && (
